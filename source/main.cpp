@@ -5,6 +5,8 @@
 #include <resource.hpp>
 
 h_view gView;
+sint32 gViewWidth = 0;
+sint32 gViewHeight = 0;
 
 bool PlatformInit()
 {

@@ -6,13 +6,13 @@ void OnDan(const char* text, int enter)
     {
         int dan = boss_atoi(text);
 
-        print("\n [%i단]\n", dan);
+        print("\n [%iDan]\n", dan);
         for(int i = 1; i <= 9; ++i)
             print(" %i x %i = %2i\n", dan, i, dan * i);
 
         print("\n ");
-        clickbox(8, 1, repaint);
-        print("다시하기\n");
+        clickbox(7, 1, repaint);
+        print(" Retry \n");
     }
 }
 
@@ -20,7 +20,7 @@ HUE_DECLARE_APP("GooGooDan", googoodan)
 void googoodan()
 {
     clrscr(60, 20, "#ffffff");
-    print("\n 구구단의 단(2~9)을 입력하세요 : ");
+    print("\n Please Type Your Dan(2~9) : ");
 
     setcolor("#ff0000");
     scan(4, OnDan);

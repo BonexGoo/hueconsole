@@ -7,11 +7,19 @@
 ZAY_DECLARE_VIEW_CLASS("hueconsoleView", hueconsoleData)
 
 extern h_view gView;
+extern sint32 gViewWidth;
+extern sint32 gViewHeight;
 static hueconsoleData* gSelf = nullptr;
 
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
-    if(type == CT_Tick)
+    if(type == CT_Size)
+    {
+        sint32s WH(in);
+        gViewWidth = WH[0];
+        gViewHeight = WH[1];
+    }
+    else if(type == CT_Tick)
     {
         if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
             m->invalidate(2);
@@ -62,7 +70,19 @@ ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 {
     if(0 < m->mLastApp.Length())
     {
-        if(type == GT_WheelUp || type == GT_WheelDown)
+        static sint32 OldY;
+        static sint32 OldScrollLog;
+        if(type == GT_Pressed)
+        {
+            OldY = y;
+            OldScrollLog = m->mScrollLog;
+        }
+        else if(type == GT_InDragging || type == GT_OutDragging)
+        {
+            m->mScrollLog = OldScrollLog + m->mCellHeight * 1000 * (OldY - y) / Math::Max(1, gViewHeight);
+            m->invalidate(2);
+        }
+        else if(type == GT_WheelUp || type == GT_WheelDown)
         {
             m->mScrollLog = m->mScrollLog + ((type == GT_WheelUp)? -1000 : 1000);
             m->invalidate(2);

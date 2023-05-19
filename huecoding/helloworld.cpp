@@ -13,7 +13,7 @@ void OnClickRepaint()
     repaint();
 }
 
-HUE_DECLARE_APP("HelloWorld", helloworld)
+//HUE_DECLARE_APP("HelloWorld", helloworld)
 void helloworld()
 {
     setbgcolor("#ffffff");
@@ -49,7 +49,7 @@ void OnScanResult(const char* text, int enter)
     }
 }
 
-HUE_DECLARE_APP("Math-Holic", mathholic)
+//HUE_DECLARE_APP("Math-Holic", mathholic)
 void mathholic()
 {
     clrscr(80, 30, "#ffffee");
