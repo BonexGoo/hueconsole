@@ -1,6 +1,6 @@
 ﻿#include <huecoding.h>
 
-HUE_DECLARE_APP("스터디23", main_study23)
+HUE_DECLARE_APP("STUDY-23", main_study23)
 void main_study23()
 {
     int sum;
@@ -12,7 +12,7 @@ void main_study23()
     print("책 3권을 45일 후에 반납 시 과태료눈 %i원입니다.\n", sum);
 }
 
-HUE_DECLARE_APP("스터디01", main_study01)
+HUE_DECLARE_APP("STUDY-01", main_study01)
 void main_study01()
 {
     print("팔푼이 \n");

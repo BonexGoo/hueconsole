@@ -6,6 +6,7 @@
 
 ZAY_DECLARE_VIEW_CLASS("hueconsoleView", hueconsoleData)
 
+extern h_view gView;
 static hueconsoleData* gSelf = nullptr;
 
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
@@ -78,6 +79,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     {
         // 앱리스트
         auto& AllApps = hueconsoleData::_AllApps();
+        ZAY_FONT(panel, 2.0)
         ZAY_LTRB(panel, 10, 0, panel.w() - 10, panel.h() - 10)
         for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
         {
@@ -110,94 +112,97 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
             }
         }
     }
-    else ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
+    else
     {
-        // 셀
-        const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-        for(sint32 i = 0, iend = m->mCells.Count(); i < iend; ++i)
+        // 화면내용
+        ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
         {
-            const auto& CurCell = m->mCells[i];
-            const bool ExtendFont = (1 < CurCell.mLetter.Length());
-            const sint32 X = i % m->mCellWidth;
-            const sint32 Y = i / m->mCellWidth;
-            const sint32 XEnd = (ExtendFont)? X + 2 : X + 1;
-            ZAY_LTRB_SCISSOR(panel,
-                panel.w() * X / m->mCellWidth,
-                panel.h() * Y / m->mCellHeight,
-                panel.w() * XEnd / m->mCellWidth,
-                panel.h() * (Y + 1) / m->mCellHeight)
+            // 셀
+            const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+            for(sint32 i = 0, iend = m->mCells.Count(); i < iend; ++i)
             {
-                ZAY_COLOR(panel, CurCell.mBGColor)
+                const auto& CurCell = m->mCells[i];
+                const bool ExtendFont = (1 < CurCell.mLetter.Length());
+                const sint32 X = i % m->mCellWidth;
+                const sint32 Y = i / m->mCellWidth;
+                const sint32 XEnd = (ExtendFont)? X + 2 : X + 1;
+                ZAY_LTRB_SCISSOR(panel,
+                    panel.w() * X / m->mCellWidth,
+                    panel.h() * Y / m->mCellHeight,
+                    panel.w() * XEnd / m->mCellWidth,
+                    panel.h() * (Y + 1) / m->mCellHeight)
                 {
-                    ZAY_RGBA(panel, 128, 128, 128, 120)
-                        panel.fill();
-                    ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
-                        panel.fill();
-                }
-                const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
-                ZAY_COLOR(panel, CurCell.mColor)
-                ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
-                    panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
-            }
-            if(ExtendFont) i++;
-        }
-
-        // 박스
-        for(sint32 i = 0, iend = m->mBoxes.Count(); i < iend; ++i)
-        {
-            auto& CurBox = m->mBoxes[i];
-            const String UIName = String::Format("ui_%d", i);
-            ZAY_LTRB(panel,
-                panel.w() * CurBox.mLeft / m->mCellWidth,
-                panel.h() * CurBox.mTop / m->mCellHeight,
-                panel.w() * CurBox.mRight / m->mCellWidth,
-                panel.h() * CurBox.mBottom / m->mCellHeight)
-            {
-                const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
-                ZAY_COLOR(panel, CurBox.mColor)
-                for(sint32 j = 0, jend = (Focused)? 4 : 2; j < jend; ++j)
-                    ZAY_INNER(panel, -j)
-                    ZAY_RGBA(panel, 128, 128, 128, 128 - (128 / jend) * j)
-                        panel.rect(1);
-
-                // 스캔에디터
-                if(CurBox.mScanCB)
-                {
-                    const String DOMName = String::Format("dom_%d", i);
-                    ZAY_COLOR(panel, CurBox.mColor)
-                    ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h())
-                    ZAY_LTRB(panel, 0, 0, panel.w() - 4, panel.h())
-                    if(ZayControl::RenderEditBox(panel, UIName, DOMName, 1, true, false))
-                        panel.repaint();
-                }
-                // 클릭박스
-                else if(CurBox.mClickCB)
-                {
-                    ZAY_INNER_UI(panel, 0, UIName,
-                        ZAY_GESTURE_T(t, i)
+                    ZAY_COLOR(panel, CurCell.mBGColor)
                     {
-                        if(t == GT_InReleased)
+                        ZAY_RGBA(panel, 128, 128, 128, 120)
+                            panel.fill();
+                        ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                            panel.fill();
+                    }
+                    const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
+                    ZAY_COLOR(panel, CurCell.mColor)
+                    ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
+                        panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
+                }
+                if(ExtendFont) i++;
+            }
+
+            // 박스
+            for(sint32 i = 0, iend = m->mBoxes.Count(); i < iend; ++i)
+            {
+                auto& CurBox = m->mBoxes[i];
+                const String UIName = String::Format("ui_%d", i);
+                ZAY_LTRB(panel,
+                    panel.w() * CurBox.mLeft / m->mCellWidth,
+                    panel.h() * CurBox.mTop / m->mCellHeight,
+                    panel.w() * CurBox.mRight / m->mCellWidth,
+                    panel.h() * CurBox.mBottom / m->mCellHeight)
+                {
+                    const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
+                    ZAY_COLOR(panel, CurBox.mColor)
+                    for(sint32 j = 0, jend = (Focused)? 4 : 2; j < jend; ++j)
+                        ZAY_INNER(panel, -j)
+                        ZAY_RGBA(panel, 128, 128, 128, 128 - (128 / jend) * j)
+                            panel.rect(1);
+
+                    // 스캔에디터
+                    if(CurBox.mScanCB)
+                    {
+                        const String DOMName = String::Format("dom_%d", i);
+                        ZAY_COLOR(panel, CurBox.mColor)
+                        ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h())
+                        ZAY_LTRB(panel, 2, 0, (panel.w() - 4) - 2, panel.h())
+                        if(ZayControl::RenderEditBox(panel, UIName, DOMName, 1, true, false))
+                            panel.repaint();
+                    }
+                    // 클릭박스
+                    else if(CurBox.mClickCB)
+                    {
+                        ZAY_INNER_UI(panel, 0, UIName,
+                            ZAY_GESTURE_T(t, i)
                         {
-                            auto& CurBox = m->mBoxes[i];
-                            if(CurBox.mClickCB)
-                                CurBox.mClickCB();
-                        }
-                    });
+                            if(t == GT_InReleased)
+                            {
+                                auto& CurBox = m->mBoxes[i];
+                                if(CurBox.mClickCB)
+                                    CurBox.mClickCB();
+                            }
+                        });
+                    }
                 }
             }
         }
+
+        // 가상키보드
+        ZAY_FONT(panel, 1.5)
+        ZAY_XYWH(panel, (panel.w() - 30 * 10) / 2 + m->mImePosPhy.x, (panel.h() - 30 * 4) + m->mImePosPhy.y, 30 * 10, 30 * 4)
+            m->RenderImeDialog(panel);
     }
 }
 
 hueconsoleData::hueconsoleData()
 {
     gSelf = this;
-    mLastColor = Color::Black;
-    mLastBGColor = Color::White;
-    mClearBGColor = Color::White;
-    mUpdateMsec = 0;
-    mScrollLog = 0;
-    mScrollPhy = 0;
     ClearScreen(80, 25, Color::White);
 }
 
@@ -206,14 +211,63 @@ hueconsoleData::~hueconsoleData()
     gSelf = nullptr;
 }
 
-void hueconsoleData::ValidCells(sint32 count)
+void hueconsoleData::RenderImeDialog(ZayPanel& panel)
 {
-    for(sint32 i = mCells.Count(); i < count; ++i)
+    static chars KeyCodes[4][10][2] = {
+        {{"1", "."}, {"2", ","}, {"3", "?"}, {"4", "!"}, {"5", ":"}, {"6", "="}, {"7", "+"}, {"8", "-"}, {"9", "*"}, {"0", "/"}},
+        {{"a", "A"}, {"b", "B"}, {"c", "C"}, {"d", "D"}, {"e", "E"}, {"f", "F"}, {"g", "G"}, {"h", "H"}, {"i", "I"}, {"j", "J"}},
+        {{"k", "K"}, {"l", "L"}, {"m", "M"}, {"n", "N"}, {"o", "O"}, {"p", "P"}, {"q", "Q"}, {"r", "R"}, {" ", " "}, {"↑", "↑"}},
+        {{"s", "S"}, {"t", "T"}, {"u", "U"}, {"v", "V"}, {"w", "W"}, {"x", "X"}, {"y", "Y"}, {"z", "Z"}, {"←", "←"}, {"↙", "↙"}}};
+    for(sint32 y = 0, yend = 4; y < yend; ++y)
+    for(sint32 x = 0, xend = 10; x < xend; ++x)
     {
-        auto& NewCell = mCells.AtAdding();
-        NewCell.mColor = Color::Black;
-        NewCell.mBGColor = mClearBGColor;
-        NewCell.mWrittenMsec = 0;
+        const String UIName = String::Format("key_%d_%d", y, x);
+        ZAY_LTRB_UI(panel, panel.w() * x / xend, panel.h() * y / yend, panel.w() * (x + 1) / xend, panel.h() * (y + 1) / yend, UIName,
+            ZAY_GESTURE_T(t, y, x, this)
+            {
+                if(t == GT_InReleased)
+                {
+                    chars OneKey = KeyCodes[y][x][mImeShifted];
+                    if(!String::Compare(OneKey, "↑"))
+                        mImeShifted ^= true;
+                    else
+                    {
+                        if(!String::Compare(OneKey, "←"))
+                        {
+                            Platform::SendKeyEvent(gView, 8, OneKey, true);
+                            Platform::SendKeyEvent(gView, 8, OneKey, false);
+                        }
+                        else if(!String::Compare(OneKey, "↙"))
+                        {
+                            Platform::SendKeyEvent(gView, 13, OneKey, true);
+                            Platform::SendKeyEvent(gView, 13, OneKey, false);
+                        }
+                        else
+                        {
+                            Platform::SendKeyEvent(gView, OneKey[0] & 0xFF, OneKey, true);
+                            Platform::SendKeyEvent(gView, OneKey[0] & 0xFF, OneKey, false);
+                        }
+                        mImeShifted = false;
+                    }
+                }
+            })
+        ZAY_LTRB(panel, 2, 2, panel.w() - 3, panel.w() - 3)
+        {
+            const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
+            const bool Pressed = ((panel.state(UIName) & (PS_Pressed | PS_Dragging)) != 0);
+            ZAY_MOVE_IF(panel, 0, 1, Pressed)
+            {
+                ZAY_RGB(panel, 200, 200, 255)
+                {
+                    ZAY_RGBA(panel, 128, 128, 128, (Focused)? 96 : 64)
+                        panel.fill();
+                    panel.rect(2);
+                }
+                ZAY_INNER_SCISSOR(panel, 0)
+                ZAY_RGB(panel, 0, 0, 0)
+                    panel.text(panel.w() / 2, panel.h() / 2, KeyCodes[y][x][mImeShifted]);
+            }
+        }
     }
 }
 
@@ -373,5 +427,16 @@ void hueconsoleData::Repaint()
             (*OneApp)();
             gSelf->invalidate();
         }
+    }
+}
+
+void hueconsoleData::ValidCells(sint32 count)
+{
+    for(sint32 i = mCells.Count(); i < count; ++i)
+    {
+        auto& NewCell = mCells.AtAdding();
+        NewCell.mColor = Color::Black;
+        NewCell.mBGColor = mClearBGColor;
+        NewCell.mWrittenMsec = 0;
     }
 }

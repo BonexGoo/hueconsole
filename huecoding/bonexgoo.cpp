@@ -16,7 +16,7 @@ void OnDan(const char* text, int enter)
     }
 }
 
-HUE_DECLARE_APP("구구단마스터", googoodan)
+HUE_DECLARE_APP("GooGooDan", googoodan)
 void googoodan()
 {
     clrscr(60, 20, "#ffffff");

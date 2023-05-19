@@ -5,7 +5,7 @@ void OnClickOK()
     gotoxy(3, 3);
     setcolor("#ff00ff");
     setbgcolor("#ffffff");
-    print("클릭했다");
+    print("Was Click");
 }
 
 void OnClickRepaint()
@@ -13,20 +13,20 @@ void OnClickRepaint()
     repaint();
 }
 
-HUE_DECLARE_APP("헬로월드", helloworld)
+HUE_DECLARE_APP("HelloWorld", helloworld)
 void helloworld()
 {
     setbgcolor("#ffffff");
 
     gotoxy(3, 3);
     setcolor("#ff0000");
-    print("헬로월드!!!");
+    print("HelloWorld!!!");
 
     gotoxy(3, 5);
     setcolor("#ff00ff");
     setbgcolor("#80e0e0");
-    clickbox(4, 1, OnClickOK);
-    print("클릭");
+    clickbox(7, 1, OnClickOK);
+    print(" click ");
 
     gotoxy(12, 5);
     setcolor("#ff00ff");
@@ -49,7 +49,7 @@ void OnScanResult(const char* text, int enter)
     }
 }
 
-HUE_DECLARE_APP("수학공부", mathholic)
+HUE_DECLARE_APP("Math-Holic", mathholic)
 void mathholic()
 {
     clrscr(80, 30, "#ffffee");

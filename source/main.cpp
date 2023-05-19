@@ -4,6 +4,8 @@
 
 #include <resource.hpp>
 
+h_view gView;
+
 bool PlatformInit()
 {
     #if BOSS_WASM
@@ -16,7 +18,7 @@ bool PlatformInit()
 
     Platform::SetViewCreator(ZayView::Creator);
     Platform::SetWindowName("Hue Console");
-    Platform::SetWindowView("hueconsoleView");
+    gView = Platform::SetWindowView("hueconsoleView");
 
     // 윈도우 위치설정
     String WindowInfoString = String::FromAsset("windowinfo.json");
