@@ -55,6 +55,7 @@ public:
     Color mLastBGColor {Color::White};
     Color mClearBGColor {Color::White};
     Array<Box> mBoxes;
+    bool mScrollLock {false};
     sint32 mScrollLog {0};
     sint32 mScrollPhy {0};
     uint64 mUpdateMsec {0};

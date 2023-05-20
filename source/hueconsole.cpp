@@ -18,34 +18,65 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         sint32s WH(in);
         gViewWidth = WH[0];
         gViewHeight = WH[1];
+        m->mImePosLog.x = Math::Clamp(m->mImePosLog.x,
+            0 - gViewWidth / 2 + (30 * 10) / 2,
+            gViewWidth - gViewWidth / 2 - (30 * 10) / 2);
     }
     else if(type == CT_Tick)
     {
         if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
             m->invalidate(2);
 
-        // 스크롤
-        const sint32 ScrollMin = 0 * 1000;
-        const sint32 ScrollMax = Math::Max(0, (m->mCells.Count() / m->mCellWidth) - m->mCellHeight) * 1000;
-        if(m->mScrollLog < ScrollMin)
+        if(0 < m->mLastApp.Length())
         {
-            m->mScrollLog = Math::Min((m->mScrollLog * 8 + ScrollMin * 2) / 10 + 1, ScrollMin);
-            m->invalidate(2);
-        }
-        else if(m->mScrollLog > ScrollMax)
-        {
-            m->mScrollLog = Math::Max((m->mScrollLog * 8 + ScrollMax * 2) / 10 - 1, ScrollMax);
-            m->invalidate(2);
-        }
-        if(m->mScrollPhy < m->mScrollLog)
-        {
-            m->mScrollPhy = Math::Min((m->mScrollPhy * 9 + m->mScrollLog * 1) / 10 + 1, m->mScrollLog);
-            m->invalidate(2);
-        }
-        else if(m->mScrollPhy > m->mScrollLog)
-        {
-            m->mScrollPhy = Math::Max((m->mScrollPhy * 9 + m->mScrollLog * 1) / 10 - 1, m->mScrollLog);
-            m->invalidate(2);
+            // 스크롤처리
+            if(!m->mScrollLock)
+            {
+                const sint32 ScrollMin = 0 * 1000;
+                const sint32 ScrollMax = Math::Max(0, (m->mCells.Count() / m->mCellWidth) - m->mCellHeight) * 1000;
+                if(m->mScrollLog < ScrollMin)
+                {
+                    m->mScrollLog = Math::Min((m->mScrollLog * 7 + ScrollMin * 3) / 10 + 1, ScrollMin);
+                    m->invalidate(2);
+                }
+                else if(ScrollMax < m->mScrollLog)
+                {
+                    m->mScrollLog = Math::Max((m->mScrollLog * 7 + ScrollMax * 3) / 10 - 1, ScrollMax);
+                    m->invalidate(2);
+                }
+            }
+            if(m->mScrollPhy < m->mScrollLog)
+            {
+                m->mScrollPhy = Math::Min((m->mScrollPhy * 8 + m->mScrollLog * 2) / 10 + 1, m->mScrollLog);
+                m->invalidate(2);
+            }
+            else if(m->mScrollLog < m->mScrollPhy)
+            {
+                m->mScrollPhy = Math::Max((m->mScrollPhy * 8 + m->mScrollLog * 2) / 10 - 1, m->mScrollLog);
+                m->invalidate(2);
+            }
+
+            // IME처리
+            if(m->mImePosPhy.x < m->mImePosLog.x)
+            {
+                m->mImePosPhy.x = Math::Min((m->mImePosPhy.x * 7 + m->mImePosLog.x * 3) / 10 + 1, m->mImePosLog.x);
+                m->invalidate(2);
+            }
+            else if(m->mImePosLog.x < m->mImePosPhy.x)
+            {
+                m->mImePosPhy.x = Math::Max((m->mImePosPhy.x * 7 + m->mImePosLog.x * 3) / 10 - 1, m->mImePosLog.x);
+                m->invalidate(2);
+            }
+            if(m->mImePosLog.y == 1 && m->mImePosPhy.y < 30 * 4)
+            {
+                m->mImePosPhy.y = Math::Min((m->mImePosPhy.y * 8 + (30 * 4) * 2) / 10 + 1, 30 * 4);
+                m->invalidate(2);
+            }
+            else if(m->mImePosLog.y == 0 && 0 < m->mImePosPhy.y)
+            {
+                m->mImePosPhy.y = Math::Max((m->mImePosPhy.y * 8 + (0) * 2) / 10 - 1, 0);
+                m->invalidate(2);
+            }
         }
     }
 }
@@ -70,21 +101,28 @@ ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
 {
     if(0 < m->mLastApp.Length())
     {
-        static sint32 OldY;
         static sint32 OldScrollLog;
+        static sint32 OldY;
+
         if(type == GT_Pressed)
         {
-            OldY = y;
+            m->clearCapture();
+            m->mScrollLock = true;
             OldScrollLog = m->mScrollLog;
+            OldY = y;
         }
         else if(type == GT_InDragging || type == GT_OutDragging)
         {
             m->mScrollLog = OldScrollLog + m->mCellHeight * 1000 * (OldY - y) / Math::Max(1, gViewHeight);
             m->invalidate(2);
         }
+        else if(type == GT_InReleased || type == GT_OutReleased || type == GT_CancelReleased)
+        {
+            m->mScrollLock = false;
+        }
         else if(type == GT_WheelUp || type == GT_WheelDown)
         {
-            m->mScrollLog = m->mScrollLog + ((type == GT_WheelUp)? -1000 : 1000);
+            m->mScrollLog = m->mScrollLog + ((type == GT_WheelUp)? -1000 : 1000) * 3;
             m->invalidate(2);
         }
     }
@@ -139,32 +177,48 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
         {
             // 셀
             const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-            for(sint32 i = 0, iend = m->mCells.Count(); i < iend; ++i)
+            for(sint32 y = 0, yend = m->mCells.Count() / m->mCellWidth; y < yend; ++y)
             {
-                const auto& CurCell = m->mCells[i];
-                const bool ExtendFont = (1 < CurCell.mLetter.Length());
-                const sint32 X = i % m->mCellWidth;
-                const sint32 Y = i / m->mCellWidth;
-                const sint32 XEnd = (ExtendFont)? X + 2 : X + 1;
                 ZAY_LTRB_SCISSOR(panel,
-                    panel.w() * X / m->mCellWidth,
-                    panel.h() * Y / m->mCellHeight,
-                    panel.w() * XEnd / m->mCellWidth,
-                    panel.h() * (Y + 1) / m->mCellHeight)
+                    0, panel.h() * y / m->mCellHeight,
+                    panel.w(), panel.h() * (y + 1) / m->mCellHeight)
                 {
-                    ZAY_COLOR(panel, CurCell.mBGColor)
+                    // 바탕
+                    for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
                     {
-                        ZAY_RGBA(panel, 128, 128, 128, 120)
-                            panel.fill();
-                        ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
-                            panel.fill();
+                        const auto& CurCell = m->mCells[x + y * xend];
+                        const bool ExtendFont = (1 < CurCell.mLetter.Length());
+                        ZAY_LTRB(panel,
+                            panel.w() * x / m->mCellWidth, 0,
+                            panel.w() * (x + 1 + ExtendFont) / m->mCellWidth, panel.h())
+                        {
+                            ZAY_COLOR(panel, CurCell.mBGColor)
+                            {
+                                ZAY_RGBA(panel, 128, 128, 128, 120)
+                                    panel.fill();
+                                ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                                    panel.fill();
+                            }
+                        }
+                        if(ExtendFont) x++;
                     }
-                    const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
-                    ZAY_COLOR(panel, CurCell.mColor)
-                    ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
-                        panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
+                    // 텍스트
+                    for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
+                    {
+                        const auto& CurCell = m->mCells[x + y * xend];
+                        const bool ExtendFont = (1 < CurCell.mLetter.Length());
+                        ZAY_LTRB(panel,
+                            panel.w() * x / m->mCellWidth, 0,
+                            panel.w() * (x + 1 + ExtendFont) / m->mCellWidth, panel.h())
+                        {
+                            const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
+                            ZAY_COLOR(panel, CurCell.mColor)
+                            ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
+                                panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
+                        }
+                        if(ExtendFont) x++;
+                    }
                 }
-                if(ExtendFont) i++;
             }
 
             // 박스
@@ -215,7 +269,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
         // 가상키보드
         ZAY_FONT(panel, 1.5)
-        ZAY_XYWH(panel, (panel.w() - 30 * 10) / 2 + m->mImePosPhy.x, (panel.h() - 30 * 4) + m->mImePosPhy.y, 30 * 10, 30 * 4)
+        ZAY_XYWH(panel, panel.w() / 2 - (30 * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, 30 * 10, 30 * 4)
             m->RenderImeDialog(panel);
     }
 }
@@ -223,7 +277,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 hueconsoleData::hueconsoleData()
 {
     gSelf = this;
-    ClearScreen(80, 25, Color::White);
+    ClearScreen(50, 25, Color::White);
 }
 
 hueconsoleData::~hueconsoleData()
@@ -236,7 +290,7 @@ void hueconsoleData::RenderImeDialog(ZayPanel& panel)
     static chars KeyCodes[4][10][2] = {
         {{"1", "."}, {"2", ","}, {"3", "?"}, {"4", "!"}, {"5", ":"}, {"6", "="}, {"7", "+"}, {"8", "-"}, {"9", "*"}, {"0", "/"}},
         {{"a", "A"}, {"b", "B"}, {"c", "C"}, {"d", "D"}, {"e", "E"}, {"f", "F"}, {"g", "G"}, {"h", "H"}, {"i", "I"}, {"j", "J"}},
-        {{"k", "K"}, {"l", "L"}, {"m", "M"}, {"n", "N"}, {"o", "O"}, {"p", "P"}, {"q", "Q"}, {"r", "R"}, {" ", " "}, {"↑", "↑"}},
+        {{"k", "K"}, {"l", "L"}, {"m", "M"}, {"n", "N"}, {"o", "O"}, {"p", "P"}, {"q", "Q"}, {"r", "R"}, {" ", "_"}, {"↑", "↑"}},
         {{"s", "S"}, {"t", "T"}, {"u", "U"}, {"v", "V"}, {"w", "W"}, {"x", "X"}, {"y", "Y"}, {"z", "Z"}, {"←", "←"}, {"↙", "↙"}}};
     for(sint32 y = 0, yend = 4; y < yend; ++y)
     for(sint32 x = 0, xend = 10; x < xend; ++x)
@@ -274,19 +328,68 @@ void hueconsoleData::RenderImeDialog(ZayPanel& panel)
         ZAY_LTRB(panel, 2, 2, panel.w() - 3, panel.w() - 3)
         {
             const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
-            const bool Pressed = ((panel.state(UIName) & (PS_Pressed | PS_Dragging)) != 0);
-            ZAY_MOVE_IF(panel, 0, 1, Pressed)
+            const bool Pressed = ((panel.state(UIName) & PS_Pressed) != 0);
+            const String CurText = KeyCodes[y][x][mImeShifted];
+            // 바탕
+            ZAY_INNER(panel, (Pressed)? 2 : 0)
+            ZAY_RGB(panel, 220, 220, 255)
+            ZAY_RGB_IF(panel, 255, 128, 128, mImeShifted && !CurText.Compare("↑"))
             {
-                ZAY_RGB(panel, 200, 200, 255)
-                {
-                    ZAY_RGBA(panel, 128, 128, 128, (Focused)? 96 : 64)
-                        panel.fill();
-                    panel.rect(2);
-                }
-                ZAY_INNER_SCISSOR(panel, 0)
-                ZAY_RGB(panel, 0, 0, 0)
-                    panel.text(panel.w() / 2, panel.h() / 2, KeyCodes[y][x][mImeShifted]);
+                ZAY_RGBA(panel, 128, 128, 128, (Focused)? 96 : 64)
+                    panel.fill();
+                panel.rect(2);
             }
+            // 텍스트
+            ZAY_INNER_SCISSOR(panel, 0)
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.text(panel.w() / 2, panel.h() / 2, CurText);
+        }
+    }
+
+    // 타이틀
+    ZAY_LTRB_UI(panel, 2, -18, panel.w() - 3, -3, "key_title",
+        ZAY_GESTURE_TXY(t, x, y, this)
+        {
+            static bool HasDrag;
+            static sint32 OldPosLogX;
+            static sint32 OldX;
+
+            if(t == GT_Pressed)
+            {
+                HasDrag = false;
+                OldPosLogX = mImePosLog.x;
+                OldX = x;
+            }
+            else if(t == GT_InDragging || t == GT_OutDragging)
+            {
+                if(mImePosLog.y == 1)
+                {
+                    HasDrag = true;
+                    mImePosLog.x = OldPosLogX + x - OldX;
+                    invalidate(2);
+                }
+            }
+            else if(t == GT_InReleased || t == GT_OutReleased || t == GT_CancelReleased)
+            {
+                if(HasDrag)
+                {
+                    mImePosLog.x = Math::Clamp(mImePosLog.x,
+                        0 - gViewWidth / 2 + (30 * 10) / 2,
+                        gViewWidth - gViewWidth / 2 - (30 * 10) / 2);
+                }
+                else mImePosLog.y = 1 - mImePosLog.y;
+            }
+        })
+    {
+        const bool Focused = ((panel.state("key_title") & (PS_Focused | PS_Dropping)) == PS_Focused);
+        const bool Pressed = ((panel.state("key_title") & (PS_Pressed | PS_Dragging)) != 0);
+        ZAY_RGB(panel, 200, 200, 200)
+        {
+            ZAY_RGBA(panel, 128, 128, 128, (Focused) ? 96 : 64)
+                panel.fill();
+            ZAY_FONT(panel, 0.6)
+                panel.text(" KEYBOARD", UIFA_LeftMiddle, UIFE_Right);
+            panel.rect(2);
         }
     }
 }
@@ -305,7 +408,7 @@ void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
             NewCell.mBGColor = bgcolor;
             NewCell.mWrittenMsec = 0;
         }
-        gSelf->mCellFocus = 0;
+        GotoXY(0, 0);
         gSelf->mLastBGColor = bgcolor;
         gSelf->mClearBGColor = bgcolor;
         gSelf->mBoxes.Clear();
@@ -315,7 +418,16 @@ void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
 void hueconsoleData::GotoXY(sint32 x, sint32 y)
 {
     if(gSelf)
+    {
         gSelf->mCellFocus = x + y * gSelf->mCellWidth;
+        if(!gSelf->mScrollLock)
+        {
+            if(gSelf->mScrollLog + (gSelf->mCellHeight - 1) * 1000 < y * 1000)
+                gSelf->mScrollLog = y * 1000 - (gSelf->mCellHeight - 1) * 1000;
+            else if(y * 1000 < gSelf->mScrollLog)
+                gSelf->mScrollLog = y * 1000;
+        }
+    }
 }
 
 void hueconsoleData::SetColor(Color color)
@@ -367,7 +479,7 @@ void hueconsoleData::TextPrint(String text)
                 }
             }
         }
-        gSelf->mCellFocus = LetterIndex;
+        GotoXY(LetterIndex % gSelf->mCellWidth, LetterIndex / gSelf->mCellWidth);
         gSelf->mUpdateMsec = UpdateMsec;
         const sint32 YSize = (gSelf->mCellFocus + gSelf->mCellWidth - 1) / gSelf->mCellWidth;
         gSelf->ValidCells(gSelf->mCellWidth * YSize);
@@ -387,7 +499,7 @@ void hueconsoleData::TextScan(sint32 w, ScanCB cb)
             Y++;
             Width = Math::Min(Width, gSelf->mCellWidth);
         }
-        gSelf->mCellFocus = (Y + 1) * gSelf->mCellWidth;
+        GotoXY(0, Y + 1);
 
         auto& NewBox = gSelf->mBoxes.AtAdding();
         NewBox.mColor = gSelf->mLastColor;

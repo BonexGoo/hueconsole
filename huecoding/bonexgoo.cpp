@@ -6,7 +6,7 @@ void OnDan(const char* text, int enter)
     {
         int dan = boss_atoi(text);
 
-        print("\n [%iDan]\n", dan);
+        print("\n [%i DAN]\n", dan);
         for(int i = 1; i <= 9; ++i)
             print(" %i x %i = %2i\n", dan, i, dan * i);
 
@@ -20,7 +20,7 @@ HUE_DECLARE_APP("GooGooDan", googoodan)
 void googoodan()
 {
     clrscr(60, 20, "#ffffff");
-    print("\n Please Type Your Dan(2~9) : ");
+    print("\n Please type the DAN(2~9) you want : ");
 
     setcolor("#ff0000");
     scan(4, OnDan);
