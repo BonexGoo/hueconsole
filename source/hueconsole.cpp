@@ -153,6 +153,9 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         if(auto OneApp = AllApps.Access(&CurApp[0]))
                         {
                             m->mLastApp = &CurApp[0];
+                            // 윈도우타이틀
+                            Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
+                                (chars) m->mLastApp, m->mCellWidth, m->mCellHeight));
                             (*OneApp)();
                         }
                     }
@@ -175,49 +178,92 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
         // 화면내용
         ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
         {
-            // 셀
-            const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+            // 셀-바탕
             for(sint32 y = 0, yend = m->mCells.Count() / m->mCellWidth; y < yend; ++y)
             {
-                ZAY_LTRB_SCISSOR(panel,
-                    0, panel.h() * y / m->mCellHeight,
-                    panel.w(), panel.h() * (y + 1) / m->mCellHeight)
+                ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * y / m->mCellHeight),
+                    panel.w(), sint32(panel.h() * (y + 1) / m->mCellHeight))
+                for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
                 {
-                    // 바탕
-                    for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
+                    const auto& CurCell = m->mCells[x + y * xend];
+                    const bool ExtendFont = (1 < CurCell.mLetter.Length());
+                    ZAY_LTRB(panel, sint32(panel.w() * x / m->mCellWidth), 0,
+                        sint32(panel.w() * (x + 1 + ExtendFont) / m->mCellWidth), panel.h())
                     {
-                        const auto& CurCell = m->mCells[x + y * xend];
-                        const bool ExtendFont = (1 < CurCell.mLetter.Length());
-                        ZAY_LTRB(panel,
-                            panel.w() * x / m->mCellWidth, 0,
-                            panel.w() * (x + 1 + ExtendFont) / m->mCellWidth, panel.h())
+                        ZAY_COLOR(panel, CurCell.mBGColor)
                         {
-                            ZAY_COLOR(panel, CurCell.mBGColor)
-                            {
-                                ZAY_RGBA(panel, 128, 128, 128, 120)
-                                    panel.fill();
-                                ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
-                                    panel.fill();
-                            }
+                            ZAY_RGBA(panel, 128, 128, 128, 120)
+                                panel.fill();
+                            ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                                panel.fill();
                         }
-                        if(ExtendFont) x++;
                     }
-                    // 텍스트
-                    for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
+                    if(ExtendFont) x++;
+                }
+            }
+
+            // 그래프
+            for(sint32 i = 0, iend = m->mGraphs.Count(); i < iend; ++i)
+            {
+                auto& CurGraph = m->mGraphs[i];
+                ZAY_COLOR(panel, CurGraph.mColor)
+                switch(CurGraph.mType)
+                {
+                case Graph::Type::Line:
+                    panel.line(
+                        Point(sint32(panel.w() * CurGraph.mXBegin / m->mCellWidth),
+                            sint32(panel.h() * CurGraph.mYBegin / m->mCellHeight)),
+                        Point(sint32(panel.w() * CurGraph.mXEnd / m->mCellWidth),
+                            sint32(panel.h() * CurGraph.mYEnd / m->mCellHeight)), 2);
+                    break;
+                case Graph::Type::Rect:
+                    ZAY_LTRB(panel,
+                        sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
+                        sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight),
+                        sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
+                        sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight))
+                        panel.fill();
+                    break;
+                case Graph::Type::Circle:
+                    ZAY_LTRB(panel,
+                        sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
+                        sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight),
+                        sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
+                        sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight))
+                        panel.circle();
+                    break;
+                case Graph::Type::Image:
+                    ZAY_RGBA(panel, 128, 128, 128, -128)
+                    ZAY_LTRB(panel,
+                        sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
+                        sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight),
+                        sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
+                        sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight))
+                        panel.ninepatch(R(CurGraph.mImage));
+                    break;
+                }
+            }
+
+            // 셀-텍스트
+            const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+            const sint32 FreeSpace = panel.h() / m->mCellHeight * 2;
+            for(sint32 y = 0, yend = m->mCells.Count() / m->mCellWidth; y < yend; ++y)
+            {
+                ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * y / m->mCellHeight) - FreeSpace,
+                    panel.w(), sint32(panel.h() * (y + 1) / m->mCellHeight) + FreeSpace)
+                for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
+                {
+                    const auto& CurCell = m->mCells[x + y * xend];
+                    const bool ExtendFont = (1 < CurCell.mLetter.Length());
+                    ZAY_LTRB(panel, sint32(panel.w() * x / m->mCellWidth), FreeSpace,
+                        sint32(panel.w() * (x + 1 + ExtendFont) / m->mCellWidth), panel.h() - FreeSpace)
                     {
-                        const auto& CurCell = m->mCells[x + y * xend];
-                        const bool ExtendFont = (1 < CurCell.mLetter.Length());
-                        ZAY_LTRB(panel,
-                            panel.w() * x / m->mCellWidth, 0,
-                            panel.w() * (x + 1 + ExtendFont) / m->mCellWidth, panel.h())
-                        {
-                            const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
-                            ZAY_COLOR(panel, CurCell.mColor)
-                            ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
-                                panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter);
-                        }
-                        if(ExtendFont) x++;
+                        const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
+                        ZAY_COLOR(panel, CurCell.mColor)
+                        ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
+                            panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter, UIFA_CenterMiddle);
                     }
+                    if(ExtendFont) x++;
                 }
             }
 
@@ -250,7 +296,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             panel.repaint();
                     }
                     // 클릭박스
-                    else if(CurBox.mClickCB)
+                    else if(CurBox.mButtonCB)
                     {
                         ZAY_INNER_UI(panel, 0, UIName,
                             ZAY_GESTURE_T(t, i)
@@ -258,8 +304,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             if(t == GT_InReleased)
                             {
                                 auto& CurBox = m->mBoxes[i];
-                                if(CurBox.mClickCB)
-                                    CurBox.mClickCB();
+                                if(CurBox.mButtonCB)
+                                    CurBox.mButtonCB(CurBox.mLeft, CurBox.mTop);
                             }
                         });
                     }
@@ -412,21 +458,11 @@ void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
         gSelf->mLastBGColor = bgcolor;
         gSelf->mClearBGColor = bgcolor;
         gSelf->mBoxes.Clear();
-    }
-}
-
-void hueconsoleData::GotoXY(sint32 x, sint32 y)
-{
-    if(gSelf)
-    {
-        gSelf->mCellFocus = x + y * gSelf->mCellWidth;
-        if(!gSelf->mScrollLock)
-        {
-            if(gSelf->mScrollLog + (gSelf->mCellHeight - 1) * 1000 < y * 1000)
-                gSelf->mScrollLog = y * 1000 - (gSelf->mCellHeight - 1) * 1000;
-            else if(y * 1000 < gSelf->mScrollLog)
-                gSelf->mScrollLog = y * 1000;
-        }
+        gSelf->mGraphs.Clear();
+        // 윈도우타이틀
+        if(0 < gSelf->mLastApp.Length())
+            Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
+                (chars) gSelf->mLastApp, gSelf->mCellWidth, gSelf->mCellHeight));
     }
 }
 
@@ -442,7 +478,7 @@ void hueconsoleData::SetBGColor(Color bgcolor)
         gSelf->mLastBGColor = bgcolor;
 }
 
-void hueconsoleData::TextPrint(String text)
+void hueconsoleData::Print(String text)
 {
     if(gSelf)
     {
@@ -486,7 +522,7 @@ void hueconsoleData::TextPrint(String text)
     }
 }
 
-void hueconsoleData::TextScan(sint32 w, ScanCB cb)
+void hueconsoleData::Scan(sint32 w, ScanCB cb)
 {
     if(gSelf)
     {
@@ -502,11 +538,11 @@ void hueconsoleData::TextScan(sint32 w, ScanCB cb)
         GotoXY(0, Y + 1);
 
         auto& NewBox = gSelf->mBoxes.AtAdding();
-        NewBox.mColor = gSelf->mLastColor;
         NewBox.mLeft = X;
         NewBox.mTop = Y;
         NewBox.mRight = X + Width;
         NewBox.mBottom = Y + 1;
+        NewBox.mColor = gSelf->mLastColor;
         NewBox.mScanCB = cb;
 
         const sint32 BoxIdx = gSelf->mBoxes.Count() - 1;
@@ -526,7 +562,7 @@ void hueconsoleData::TextScan(sint32 w, ScanCB cb)
     }
 }
 
-void hueconsoleData::ClickBox(sint32 w, sint32 h, ClickCB cb)
+void hueconsoleData::Button(sint32 w, sint32 h, ButtonCB cb)
 {
     if(gSelf)
     {
@@ -541,12 +577,58 @@ void hueconsoleData::ClickBox(sint32 w, sint32 h, ClickCB cb)
         }
 
         auto& NewBox = gSelf->mBoxes.AtAdding();
-        NewBox.mColor = gSelf->mLastColor;
         NewBox.mLeft = X;
         NewBox.mTop = Y;
         NewBox.mRight = X + Width;
         NewBox.mBottom = Y + h;
-        NewBox.mClickCB = cb;
+        NewBox.mColor = gSelf->mLastColor;
+        NewBox.mButtonCB = cb;
+    }
+}
+
+void hueconsoleData::GotoXY(sint32 x, sint32 y)
+{
+    if(gSelf)
+    {
+        gSelf->mCellFocus = x + y * gSelf->mCellWidth;
+        if(!gSelf->mScrollLock)
+        {
+            if(gSelf->mScrollLog + (gSelf->mCellHeight - 1) * 1000 < y * 1000)
+                gSelf->mScrollLog = y * 1000 - (gSelf->mCellHeight - 1) * 1000;
+            else if(y * 1000 < gSelf->mScrollLog)
+                gSelf->mScrollLog = y * 1000;
+        }
+    }
+}
+
+void hueconsoleData::GraphTo(Graph::Type type, sint32 x, sint32 y)
+{
+    if(gSelf)
+    {
+        auto& NewGraph = gSelf->mGraphs.AtAdding();
+        NewGraph.mType = type;
+        NewGraph.mXBegin = gSelf->mCellFocus % gSelf->mCellWidth;
+        NewGraph.mYBegin = gSelf->mCellFocus / gSelf->mCellWidth;
+        NewGraph.mXEnd = x;
+        NewGraph.mYEnd = y;
+        NewGraph.mColor = gSelf->mLastColor;
+        GotoXY(x, y);
+    }
+}
+
+void hueconsoleData::ImageTo(chars name, sint32 x, sint32 y)
+{
+    if(gSelf)
+    {
+        auto& NewGraph = gSelf->mGraphs.AtAdding();
+        NewGraph.mType = Graph::Type::Image;
+        NewGraph.mXBegin = gSelf->mCellFocus % gSelf->mCellWidth;
+        NewGraph.mYBegin = gSelf->mCellFocus / gSelf->mCellWidth;
+        NewGraph.mXEnd = x;
+        NewGraph.mYEnd = y;
+        NewGraph.mColor = gSelf->mLastColor;
+        NewGraph.mImage = name;
+        GotoXY(x, y);
     }
 }
 

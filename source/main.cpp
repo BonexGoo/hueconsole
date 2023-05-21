@@ -13,13 +13,13 @@ bool PlatformInit()
     #if BOSS_WASM
         Platform::InitForMDI();
     #else
-        Platform::InitForGL();
+        Platform::InitForMDI();
         if(Asset::RebuildForEmbedded())
             return false;
     #endif
 
     Platform::SetViewCreator(ZayView::Creator);
-    Platform::SetWindowName("Hue Console");
+    Platform::SetWindowName("HueConsole");
     gView = Platform::SetWindowView("hueconsoleView");
 
     // 윈도우 위치설정

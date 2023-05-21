@@ -16,11 +16,6 @@ void clrscr(int w, int h, const char* bgcolor)
     hueconsoleData::ClearScreen(w, h, bgcolor);
 }
 
-void gotoxy(int x, int y)
-{
-    hueconsoleData::GotoXY(x, y);
-}
-
 void setcolor(const char* color)
 {
     hueconsoleData::SetColor(color);
@@ -45,23 +40,48 @@ void print(const char* format, ...)
         va_start(Args, format);
         boss_vsnprintf(Collector.AtDumping(0, Size + 1), Size + 1, format, Args);
         va_end(Args);
-        hueconsoleData::TextPrint(&Collector[0]);
+        hueconsoleData::Print(&Collector[0]);
     }
     else
     {
         BOSS_ASSERT("vsnprintf에서 text의 길이를 추산하지 못함", false);
-        hueconsoleData::TextPrint("<error>");
+        hueconsoleData::Print("<error>");
     }
 }
 
 void scan(int w, ScanCB cb)
 {
-    hueconsoleData::TextScan(w, cb);
+    hueconsoleData::Scan(w, cb);
 }
 
-void clickbox(int w, int h, ClickCB cb)
+void button(int w, int h, ButtonCB cb)
 {
-    hueconsoleData::ClickBox(w, h, cb);
+    hueconsoleData::Button(w, h, cb);
+}
+
+void gotoxy(int x, int y)
+{
+    hueconsoleData::GotoXY(x, y);
+}
+
+void line(int x, int y)
+{
+    hueconsoleData::GraphTo(Graph::Type::Line, x, y);
+}
+
+void rect(int x, int y)
+{
+    hueconsoleData::GraphTo(Graph::Type::Rect, x, y);
+}
+
+void circle(int x, int y)
+{
+    hueconsoleData::GraphTo(Graph::Type::Circle, x, y);
+}
+
+void image(int x, int y, const char* name)
+{
+    hueconsoleData::ImageTo(name, x, y);
 }
 
 void repaint()

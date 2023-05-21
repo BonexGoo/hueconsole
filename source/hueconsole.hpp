@@ -14,13 +14,26 @@ public:
 class Box
 {
 public:
-    Color mColor;
     sint32 mLeft {0};
     sint32 mTop {0};
     sint32 mRight {0};
     sint32 mBottom {0};
+    Color mColor;
     ScanCB mScanCB {nullptr};
-    ClickCB mClickCB {nullptr};
+    ButtonCB mButtonCB {nullptr};
+};
+
+class Graph
+{
+public:
+    enum class Type {Null, Line, Rect, Circle, Image};
+    Type mType {Type::Null};
+    sint32 mXBegin {0};
+    sint32 mYBegin {0};
+    sint32 mXEnd {0};
+    sint32 mYEnd {0};
+    Color mColor;
+    String mImage;
 };
 
 class hueconsoleData : public ZayObject
@@ -34,12 +47,14 @@ public:
 
 public:
     static void ClearScreen(sint32 w, sint32 h, Color bgcolor);
-    static void GotoXY(sint32 x, sint32 y);
     static void SetColor(Color color);
     static void SetBGColor(Color bgcolor);
-    static void TextPrint(String text);
-    static void TextScan(sint32 w, ScanCB cb);
-    static void ClickBox(sint32 w, sint32 h, ClickCB cb);
+    static void Print(String text);
+    static void Scan(sint32 w, ScanCB cb);
+    static void Button(sint32 w, sint32 h, ButtonCB cb);
+    static void GotoXY(sint32 x, sint32 y);
+    static void GraphTo(Graph::Type type, sint32 x, sint32 y);
+    static void ImageTo(chars name, sint32 x, sint32 y);
     static void Repaint();
 
 private:
@@ -55,6 +70,7 @@ public:
     Color mLastBGColor {Color::White};
     Color mClearBGColor {Color::White};
     Array<Box> mBoxes;
+    Array<Graph> mGraphs;
     bool mScrollLock {false};
     sint32 mScrollLog {0};
     sint32 mScrollPhy {0};
