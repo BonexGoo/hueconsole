@@ -27,6 +27,15 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         if(Platform::Utility::CurrentTimeMsec() <= m->mUpdateMsec)
             m->invalidate(2);
 
+        // 웹소켓 연결직후
+        if(m->mFirstConnect && Platform::Socket::IsConnected(m->mSocket))
+        {
+            m->mFirstConnect = false;
+            m->SendGetToken();
+            m->SendGetVisitor();
+        }
+
+        // 앱모드
         if(0 < m->mLastApp.Length())
         {
             // 스크롤처리
@@ -95,6 +104,11 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
                 CurBox.mScanCB(Text, 1);
         }
     }
+    else if(type == NT_SocketReceive)
+    {
+        if(m->RecvOnce())
+            m->invalidate();
+    }
 }
 
 ZAY_VIEW_API OnGesture(GestureType type, sint32 x, sint32 y)
@@ -135,32 +149,27 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
     if(m->mLastApp.Length() == 0)
     {
+        // 통계
+        ZAY_FONT(panel, 1.5)
+        ZAY_LTRB(panel, 0, 0, panel.w(), 40)
+        {
+            ZAY_RGB(panel, 220, 220, 255)
+                panel.fill();
+            ZAY_RGB(panel, 0, 0, 0)
+                panel.text(String::Format("  VISITOR:%d   USER:%d   REALTIME:%d",
+                    m->mInfo_Total, m->mInfo_Member, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
+        }
+
         // 앱리스트
         auto& AllApps = hueconsoleData::_AllApps();
-        ZAY_FONT(panel, 2.0)
-        ZAY_LTRB(panel, 10, 0, panel.w() - 10, panel.h() - 10)
+        ZAY_LTRB(panel, 10, 40, panel.w() - 10, panel.h() - 10)
         for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
         {
             chararray CurApp;
-            AllApps.AccessByOrder(i, &CurApp);
-            const String UIName = String::Format("ui_app_%d", i);
-            ZAY_LTRB_UI_SCISSOR(panel, 0, panel.h() * i / iend + 10, panel.w(), panel.h() * (i + 1) / iend, UIName,
-                ZAY_GESTURE_T(t, CurApp)
-                {
-                    if(t == GT_InReleased)
-                    {
-                        auto& AllApps = hueconsoleData::_AllApps();
-                        if(auto OneApp = AllApps.Access(&CurApp[0]))
-                        {
-                            m->mLastApp = &CurApp[0];
-                            // 윈도우타이틀
-                            Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
-                                (chars) m->mLastApp, m->mCellWidth, m->mCellHeight));
-                            (*OneApp)();
-                        }
-                    }
-                })
+            if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
+            ZAY_LTRB_SCISSOR(panel, 0, panel.h() * i / iend + 10, panel.w(), panel.h() * (i + 1) / iend)
             {
+                // 배경
                 ZAY_RGB(panel, 255, 255, 255)
                 {
                     ZAY_RGBA(panel, 128, 128, 128, 120)
@@ -168,8 +177,73 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
                         panel.fill();
                 }
-                ZAY_RGB(panel, 0, 0, 0)
-                    panel.text(&CurApp[0], UIFA_CenterMiddle, UIFE_Right);
+
+                // 앱버튼
+                const String UIApp = String::Format("ui_app_%d", i);
+                ZAY_LTRB_UI(panel, 0, 0, panel.w() - 100, panel.h(), UIApp,
+                    ZAY_GESTURE_T(t, CurApp)
+                    {
+                        if(t == GT_InReleased)
+                        {
+                            auto& AllApps = hueconsoleData::_AllApps();
+                            if(auto OneApp = AllApps.Access(&CurApp[0]))
+                            {
+                                m->mLastApp = &CurApp[0];
+                                // 윈도우타이틀
+                                Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
+                                    (chars) m->mLastApp, m->mCellWidth, m->mCellHeight));
+                                OneApp->mCB();
+                            }
+                        }
+                    })
+                {
+                    ZAY_FONT(panel, 2.0)
+                    ZAY_RGB(panel, 0, 0, 0)
+                        panel.text(&CurApp[0], UIFA_CenterMiddle, UIFE_Right);
+                }
+
+                // 앱정보
+                ZAY_LTRB(panel, panel.w() - 100, 0, panel.w(), panel.h())
+                {
+                    // 별점
+                    ZAY_RGB(panel, 220, 220, 255)
+                    {
+                        panel.fill();
+                        ZAY_RGB(panel, 64, 64, 64)
+                        {
+                            ZAY_FONT(panel, 3.0)
+                            ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() * 0.3)
+                                panel.text(panel.w() / 2, panel.h() / 2, "★");
+                            ZAY_FONT(panel, 2.0)
+                            ZAY_LTRB(panel, 0, panel.h() * 0.3, panel.w(), panel.h() * 0.5)
+                                panel.text(panel.w() / 2, panel.h() / 2, String::Format("%04d", OneApp->mStar));
+                        }
+                    }
+
+                    // 투표
+                    const String AppName(&CurApp[0]);
+                    const String UIVote = String::Format("ui_vote_%d", i);
+                    const bool Focused = ((panel.state(UIVote) & (PS_Focused | PS_Dropping)) == PS_Focused);
+                    const bool Pressed = ((panel.state(UIVote) & (PS_Pressed | PS_Dragging)) != 0);
+                    ZAY_LTRB_UI(panel, 0, panel.h() * 0.5, panel.w(), panel.h(), UIVote,
+                        ZAY_GESTURE_T(t, AppName)
+                        {
+                            if(t == GT_InReleased)
+                                m->SendTurnHeart(AppName);
+                        })
+                    ZAY_INNER(panel, (Pressed)? 12 : 10)
+                    ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mVoted)
+                    ZAY_RGB_IF(panel, 80, 80, 80, !OneApp->mVoted)
+                    {
+                        ZAY_RGBA(panel, 128, 128, 128, (Focused)? 64 : 32)
+                            panel.fill();
+                        ZAY_FONT(panel, 1.5)
+                        {
+                            panel.rect(2);
+                            panel.text((OneApp->mVoted)? "VOTED" : "VOTE");
+                        }
+                    }
+                }
             }
         }
     }
@@ -324,11 +398,14 @@ hueconsoleData::hueconsoleData()
 {
     gSelf = this;
     ClearScreen(50, 25, Color::White);
+    mSocket = Platform::Socket::OpenForWS(false);
+    Platform::Socket::ConnectAsync(mSocket, "220.121.14.168", 7993);
 }
 
 hueconsoleData::~hueconsoleData()
 {
     gSelf = nullptr;
+    Platform::Socket::Close(mSocket);
 }
 
 void hueconsoleData::RenderImeDialog(ZayPanel& panel)
@@ -638,7 +715,7 @@ void hueconsoleData::Repaint()
     {
         if(auto OneApp = hueconsoleData::_AllApps().Access(gSelf->mLastApp))
         {
-            (*OneApp)();
+            OneApp->mCB();
             gSelf->invalidate();
         }
     }
@@ -652,5 +729,112 @@ void hueconsoleData::ValidCells(sint32 count)
         NewCell.mColor = Color::Black;
         NewCell.mBGColor = mClearBGColor;
         NewCell.mWrittenMsec = 0;
+    }
+}
+
+void hueconsoleData::SendGetToken()
+{
+    Context NewPacket;
+    NewPacket.At("type").Set("GetToken");
+    const String NewJson = NewPacket.SaveJson();
+    Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
+}
+
+void hueconsoleData::SendGetVisitor()
+{
+    Context NewPacket;
+    NewPacket.At("type").Set("GetVisitor");
+    const String NewJson = NewPacket.SaveJson();
+    Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
+}
+
+void hueconsoleData::SendGetHeart(chars item)
+{
+    Context NewPacket;
+    NewPacket.At("type").Set("GetHeart");
+    NewPacket.At("token").Set(mToken);
+    NewPacket.At("item").Set(item);
+    const String NewJson = NewPacket.SaveJson();
+    Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
+}
+
+void hueconsoleData::SendTurnHeart(chars item)
+{
+    Context NewPacket;
+    NewPacket.At("type").Set("TurnHeart");
+    NewPacket.At("token").Set(mToken);
+    NewPacket.At("item").Set(item);
+    const String NewJson = NewPacket.SaveJson();
+    Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
+}
+
+bool hueconsoleData::RecvOnce()
+{
+    bool NeedUpdate = false;
+    while(0 < Platform::Socket::RecvAvailable(mSocket))
+    {
+        uint08 RecvTemp[4096];
+        sint32 RecvSize = Platform::Socket::Recv(mSocket, RecvTemp, 4096);
+        if(0 < RecvSize)
+            Memory::Copy(mRecvQueue.AtDumpingAdded(RecvSize), RecvTemp, RecvSize);
+        else if(RecvSize < 0)
+            return NeedUpdate;
+
+        sint32 QueueEndPos = 0;
+        for(sint32 iend = mRecvQueue.Count(), i = iend - RecvSize; i < iend; ++i)
+        {
+            if(mRecvQueue[i] == '\0')
+            {
+                // 스트링 읽기
+                const String Message((chars) &mRecvQueue[QueueEndPos], i - QueueEndPos);
+                QueueEndPos = i + 1;
+                OnRecvMessage(Message);
+                NeedUpdate = true;
+            }
+        }
+        if(0 < QueueEndPos)
+            mRecvQueue.SubtractionSection(0, QueueEndPos);
+    }
+    return NeedUpdate;
+}
+
+void hueconsoleData::OnRecvMessage(chars message)
+{
+    const Context RecvJson(ST_Json, SO_OnlyReference, message);
+    const String Type = RecvJson("type").GetText();
+
+    branch;
+    jump(!Type.Compare("Token")) OnRecv_Token(RecvJson);
+    jump(!Type.Compare("Visitor")) OnRecv_Visitor(RecvJson);
+    jump(!Type.Compare("Heart")) OnRecv_Heart(RecvJson);
+}
+
+void hueconsoleData::OnRecv_Token(const Context& json)
+{
+    mToken = json("token").GetText();
+    auto& AllApps = hueconsoleData::_AllApps();
+    for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
+    {
+        chararray CurApp;
+        if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
+            SendGetHeart(&CurApp[0]);
+    }
+}
+
+void hueconsoleData::OnRecv_Visitor(const Context& json)
+{
+    mInfo_Total = json("total").GetInt();
+    mInfo_Member = json("member").GetInt();
+    mInfo_RealTime = json("realtime").GetInt();
+}
+
+void hueconsoleData::OnRecv_Heart(const Context& json)
+{
+    auto& AllApps = hueconsoleData::_AllApps();
+    const String OneItem = json("item").GetText();
+    if(auto OneApp = AllApps.Access(OneItem))
+    {
+        OneApp->mStar = json("score").GetInt();
+        OneApp->mVoted = json("yours").GetInt();
     }
 }

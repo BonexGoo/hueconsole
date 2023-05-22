@@ -7,7 +7,8 @@
 
 int _declareapp(const char* app, AppCB cb)
 {
-    hueconsoleData::_AllApps()(app) = cb;
+    auto& NewApp = hueconsoleData::_AllApps()(app);
+    NewApp.mCB = cb;
     return 0;
 }
 

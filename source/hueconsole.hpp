@@ -2,6 +2,14 @@
 #include <service/boss_zay.hpp>
 #include <huecoding.h>
 
+class App
+{
+public:
+    sint32 mStar {0};
+    bool mVoted {false};
+    AppCB mCB {nullptr};
+};
+
 class Cell
 {
 public:
@@ -61,6 +69,17 @@ private:
     void ValidCells(sint32 count);
 
 public:
+    void SendGetToken();
+    void SendGetVisitor();
+    void SendGetHeart(chars item);
+    void SendTurnHeart(chars item);
+    bool RecvOnce();
+    void OnRecvMessage(chars message);
+    void OnRecv_Token(const Context& json);
+    void OnRecv_Visitor(const Context& json);
+    void OnRecv_Heart(const Context& json);
+
+public:
     String mLastApp;
     sint32 mCellWidth {0};
     sint32 mCellHeight {0};
@@ -76,12 +95,21 @@ public:
     sint32 mScrollPhy {0};
     uint64 mUpdateMsec {0};
 
-public:
+public: // IME관련
     point64 mImePosLog {0, 0};
     point64 mImePosPhy {0, 0};
     bool mImeShifted {false};
 
+public: // 웹소켓관련
+    id_socket mSocket {nullptr};
+    bool mFirstConnect {true};
+    uint08s mRecvQueue;
+    String mToken;
+    sint32 mInfo_Total {0};
+    sint32 mInfo_Member {0};
+    sint32 mInfo_RealTime {0};
+
 public:
-    static inline Map<AppCB>& _AllApps()
-    {static Map<AppCB> _; return _;}
+    static inline Map<App>& _AllApps()
+    {static Map<App> _; return _;}
 };
