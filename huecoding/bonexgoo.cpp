@@ -35,11 +35,11 @@ void googoodan()
 HUE_DECLARE_APP("Postal", postal)
 void postal()
 {
-    setcolor("#ff0000");
-    gotoxy(2, 2);
-    circle(9, 5);
+    setcolor("#808080");
+    gotoxy(1, 2);
+    image(10, 5, "ok_over");
 
-    setcolor("#ffff00");
+    setcolor("#ff0000");
     gotoxy(3, 3);
     line(8, 3);
     line(8, 4);
@@ -49,8 +49,4 @@ void postal()
     setcolor("#000000");
     gotoxy(3, 3);
     print("HELLO");
-
-    setcolor("#808080");
-    gotoxy(10, 10);
-    image(18, 13, "btn_save_p");
 }
