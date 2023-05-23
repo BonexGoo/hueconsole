@@ -398,7 +398,7 @@ hueconsoleData::hueconsoleData()
 {
     gSelf = this;
     ClearScreen(50, 25, Color::White);
-    mSocket = Platform::Socket::OpenForWS(false);
+    mSocket = Platform::Socket::OpenForWS(true);
     Platform::Socket::ConnectAsync(mSocket, "220.121.14.168", 7993);
 }
 
