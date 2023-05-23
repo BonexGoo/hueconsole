@@ -2,10 +2,10 @@
 
 #define BOSS_EMBEDDED_ASSET_COUNT Signed64(4)
 #define BOSS_EMBEDDED_ASSET_SIZE  Signed64(115412)
-#define BOSS_EMBEDDED_ASSET_TIME  Signed64(133285122155680000)
+#define BOSS_EMBEDDED_ASSET_TIME  Signed64(133293260510770000)
 #define BOSS_EMBEDDED_ASSET_PAGE  40000
 
-static bytes ASSETS_image_DIR_atlas_DOT_png = (bytes) // D:/QtProjects/hueconsole/assets/image/atlas.png (112294bytes, modified at 132452366977280000)
+static bytes ASSETS_image_DIR_atlas_DOT_png = (bytes) // D:/AllProjects/BossProjects/hueconsole/assets/image/atlas.png (112294bytes, modified at 133293260510770000)
     "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A\x00\x00\x00\x0D\x49\x48\x44\x52\x00\x00\x0B\xB8\x00\x00\x04\x38\x08\x06\x00\x00\x00\x99\xED\x91\x48\x00\x00\x00\x19\x74\x45\x58"
     "\x74\x53\x6F\x66\x74\x77\x61\x72\x65\x00\x41\x64\x6F\x62\x65\x20\x49\x6D\x61\x67\x65\x52\x65\x61\x64\x79\x71\xC9\x65\x3C\x00\x00\x03\x81\x69\x54\x58\x74\x58\x4D"
     "\x4C\x3A\x63\x6F\x6D\x2E\x61\x64\x6F\x62\x65\x2E\x78\x6D\x70\x00\x00\x00\x00\x00\x3C\x3F\x78\x70\x61\x63\x6B\x65\x74\x20\x62\x65\x67\x69\x6E\x3D\x22\xEF\xBB\xBF"
@@ -2819,10 +2819,10 @@ static bytes ASSETS_image_DIR_atlas_DOT_png_PART2 = (bytes)
     "\x00\x00\x08\x41\xE0\x0E\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x40\x08\x02\x77\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x42\xF8\x3F\x5E\xD4\x20\x64\x9C\x7D"
     "\x5A\x47\x00\x00\x00\x00\x49\x45\x4E\x44\xAE\x42\x60\x82";
 
-static bytes ASSETS_image_DIR_atlaslist_DOT_json = (bytes) // D:/QtProjects/hueconsole/assets/image/atlaslist.json (23bytes, modified at 133285122155680000)
+static bytes ASSETS_image_DIR_atlaslist_DOT_json = (bytes) // D:/AllProjects/BossProjects/hueconsole/assets/image/atlaslist.json (23bytes, modified at 133287298479460000)
     "\xEF\xBB\xBF\x5B\x0D\x0A\x09\x22\x61\x74\x6C\x61\x73\x2E\x70\x6E\x67\x22\x0D\x0A\x5D\x0D\x0A";
 
-static bytes ASSETS_image_DIR_noimg_DOT_png = (bytes) // D:/QtProjects/hueconsole/assets/image/noimg.png (2487bytes, modified at 133285090930150000)
+static bytes ASSETS_image_DIR_noimg_DOT_png = (bytes) // D:/AllProjects/BossProjects/hueconsole/assets/image/noimg.png (2487bytes, modified at 133287298479470000)
     "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A\x00\x00\x00\x0D\x49\x48\x44\x52\x00\x00\x00\x86\x00\x00\x00\x7D\x08\x06\x00\x00\x00\x67\x2C\x1B\x4B\x00\x00\x00\x01\x73\x52\x47"
     "\x42\x00\xAE\xCE\x1C\xE9\x00\x00\x00\x04\x67\x41\x4D\x41\x00\x00\xB1\x8F\x0B\xFC\x61\x05\x00\x00\x00\x09\x70\x48\x59\x73\x00\x00\x0E\xC2\x00\x00\x0E\xC2\x01\x15"
     "\x28\x4A\x80\x00\x00\x09\x4C\x49\x44\x41\x54\x78\x5E\xED\x9D\xCF\x6B\x14\x49\x14\xC7\xDF\x26\x71\x88\xD9\xA0\xE0\x79\xF7\x90\xC9\x26\x78\x08\xF9\x17\x84\x18\x5D"
@@ -2887,7 +2887,7 @@ static bytes ASSETS_image_DIR_noimg_DOT_png = (bytes) // D:/QtProjects/hueconsol
     "\x12\x16\x06\x43\x22\xED\xAE\x32\x4C\x1B\x8E\x18\x0C\x09\x0B\x83\x21\x61\x61\x30\x24\x2C\x0C\x86\x00\xE0\x7F\x17\xBF\x48\x8E\x16\x0E\x38\xD8\x00\x00\x00\x00\x49"
     "\x45\x4E\x44\xAE\x42\x60\x82";
 
-static bytes ASSETS_image_DIR_ui_atlaskey_DOT_png = (bytes) // D:/QtProjects/hueconsole/assets/image/ui_atlaskey.png (608bytes, modified at 133285090930150000)
+static bytes ASSETS_image_DIR_ui_atlaskey_DOT_png = (bytes) // D:/AllProjects/BossProjects/hueconsole/assets/image/ui_atlaskey.png (608bytes, modified at 133287298479470000)
     "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A\x00\x00\x00\x0D\x49\x48\x44\x52\x00\x00\x00\xB3\x00\x00\x00\x0B\x08\x06\x00\x00\x00\x34\x8D\xBC\xEB\x00\x00\x00\x01\x73\x52\x47"
     "\x42\x00\xAE\xCE\x1C\xE9\x00\x00\x00\x04\x67\x41\x4D\x41\x00\x00\xB1\x8F\x0B\xFC\x61\x05\x00\x00\x00\x09\x70\x48\x59\x73\x00\x00\x0E\xC4\x00\x00\x0E\xC4\x01\x95"
     "\x2B\x0E\x1B\x00\x00\x01\xF5\x49\x44\x41\x54\x58\x47\xED\x98\x09\x72\xC2\x30\x10\x04\xED\xFC\xFF\xCF\x44\xA3\xA2\xA9\xF5\x66\x75\xF9\x90\x49\x42\x07\x95\xA2\xD9"
@@ -2922,11 +2922,11 @@ struct EmbeddedFile {
 static Map<EmbeddedFile> gEmbeddedCaches;
 static EmbeddedFile gSortedEmbeddedFiles[] = {
     {"image/atlas.png", nullptr, new bytes[3] {ASSETS_image_DIR_atlas_DOT_png, ASSETS_image_DIR_atlas_DOT_png_PART1, ASSETS_image_DIR_atlas_DOT_png_PART2},
-        Unsigned64(112294), Unsigned64(133285090930140000), Unsigned64(133291939116070000), Unsigned64(132452366977280000)},
+        Unsigned64(112294), Unsigned64(133291454997510000), Unsigned64(133293260765900000), Unsigned64(133293260510770000)},
     {"image/atlaslist.json", nullptr, new bytes[1] {ASSETS_image_DIR_atlaslist_DOT_json},
-        Unsigned64(23), Unsigned64(133285122001050000), Unsigned64(133285122155680000), Unsigned64(133285122155680000)},
+        Unsigned64(23), Unsigned64(133287300110880000), Unsigned64(133287300110880000), Unsigned64(133287298479460000)},
     {"image/noimg.png", nullptr, new bytes[1] {ASSETS_image_DIR_noimg_DOT_png},
-        Unsigned64(2487), Unsigned64(133285090930150000), Unsigned64(133285090930150000), Unsigned64(133285090930150000)},
+        Unsigned64(2487), Unsigned64(133287300110890000), Unsigned64(133287300110890000), Unsigned64(133287298479470000)},
     {"image/ui_atlaskey.png", nullptr, new bytes[1] {ASSETS_image_DIR_ui_atlaskey_DOT_png},
-        Unsigned64(608), Unsigned64(133285090930150000), Unsigned64(133285090930150000), Unsigned64(133285090930150000)}
+        Unsigned64(608), Unsigned64(133287300110900000), Unsigned64(133287300110900000), Unsigned64(133287298479470000)}
 };

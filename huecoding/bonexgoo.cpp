@@ -5,26 +5,23 @@ void OnRefresh(int x, int y)
     repaint();
 }
 
-void OnDan(const char* text, int enter)
+void OnDan(const char* text)
 {
-    if(enter)
-    {
-        int dan = boss_atoi(text);
+    int dan = boss_atoi(text);
 
-        print("\n [%i DAN]\n", dan);
-        for(int i = 1; i <= 9; ++i)
-            print(" %i x %i = %2i\n", dan, i, dan * i);
+    print("\n [%i DAN]\n", dan);
+    for(int i = 1; i <= 9; ++i)
+        print(" %i x %i = %2i\n", dan, i, dan * i);
 
-        print("\n ");
-        button(7, 1, OnRefresh);
-        print(" Retry \n");
-    }
+    print("\n ");
+    button(7, 1, OnRefresh);
+    print(" Retry \n");
 }
 
 HUE_DECLARE_APP("GooGooDan", googoodan)
 void googoodan()
 {
-    clrscr(60, 20, "#ffffff");
+    clrscr(60, 20);
     print("\n Please type the DAN(2~9) you want : ");
 
     setcolor("#ff0000");

@@ -27,8 +27,8 @@ public:
     sint32 mRight {0};
     sint32 mBottom {0};
     Color mColor;
-    ScanCB mScanCB {nullptr};
-    ButtonCB mButtonCB {nullptr};
+    TextCB mTextCB {nullptr};
+    ClickCB mClickCB {nullptr};
 };
 
 class Graph
@@ -54,15 +54,17 @@ public:
     void RenderImeDialog(ZayPanel& panel);
 
 public:
-    static void ClearScreen(sint32 w, sint32 h, Color bgcolor);
+    static void ClearScreen(sint32 w, sint32 h);
     static void SetColor(Color color);
-    static void SetBGColor(Color bgcolor);
+    static void SetBGColor(Color color);
     static void Print(String text);
-    static void Scan(sint32 w, ScanCB cb);
-    static void Button(sint32 w, sint32 h, ButtonCB cb);
+    static void Scan(sint32 w, TextCB cb);
+    static void Button(sint32 w, sint32 h, ClickCB cb);
     static void GotoXY(sint32 x, sint32 y);
     static void GraphTo(Graph::Type type, sint32 x, sint32 y);
     static void ImageTo(chars name, sint32 x, sint32 y);
+    static void Push(chars name, chars text);
+    static void Pop(chars name, sint32 count, TextCB cb);
     static void Repaint();
 
 private:
@@ -85,9 +87,9 @@ public:
     sint32 mCellHeight {0};
     Array<Cell> mCells;
     sint32 mCellFocus {0};
+    Color mClearColor {Color::White};
     Color mLastColor {Color::Black};
     Color mLastBGColor {Color::White};
-    Color mClearBGColor {Color::White};
     Array<Box> mBoxes;
     Array<Graph> mGraphs;
     bool mScrollLock {false};

@@ -12,19 +12,19 @@ int _declareapp(const char* app, AppCB cb)
     return 0;
 }
 
-void clrscr(int w, int h, const char* bgcolor)
+void clrscr(int w, int h)
 {
-    hueconsoleData::ClearScreen(w, h, bgcolor);
+    hueconsoleData::ClearScreen(w, h);
 }
 
-void setcolor(const char* color)
+void setcolor(const char* name)
 {
-    hueconsoleData::SetColor(color);
+    hueconsoleData::SetColor(name);
 }
 
-void setbgcolor(const char* bgcolor)
+void setbgcolor(const char* name)
 {
-    hueconsoleData::SetBGColor(bgcolor);
+    hueconsoleData::SetBGColor(name);
 }
 
 void print(const char* format, ...)
@@ -50,12 +50,12 @@ void print(const char* format, ...)
     }
 }
 
-void scan(int w, ScanCB cb)
+void scan(int w, TextCB cb)
 {
     hueconsoleData::Scan(w, cb);
 }
 
-void button(int w, int h, ButtonCB cb)
+void button(int w, int h, ClickCB cb)
 {
     hueconsoleData::Button(w, h, cb);
 }
@@ -83,6 +83,16 @@ void circle(int x, int y)
 void image(int x, int y, const char* name)
 {
     hueconsoleData::ImageTo(name, x, y);
+}
+
+void push(const char* name, const char* text)
+{
+    hueconsoleData::Push(name, text);
+}
+
+void pop(const char* name, int count, TextCB cb)
+{
+    hueconsoleData::Pop(name, count, cb);
 }
 
 void repaint()

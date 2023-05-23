@@ -100,8 +100,8 @@ ZAY_VIEW_API OnNotify(NotifyType type, chars topic, id_share in, id_cloned_share
             const sint32 BoxIdx = Parser::GetInt(DOMName.Offset(4)); // dom_0
             const String Text = ZayWidgetDOM::GetComment(DOMName);
             auto& CurBox = gSelf->mBoxes[BoxIdx];
-            if(CurBox.mScanCB)
-                CurBox.mScanCB(Text, 1);
+            if(CurBox.mTextCB)
+                CurBox.mTextCB(Text);
         }
     }
     else if(type == NT_SocketReceive)
@@ -150,7 +150,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     if(m->mLastApp.Length() == 0)
     {
         // 정보필드
-        ZAY_FONT(panel, 1.5)
+        ZAY_FONT(panel, 1.2)
         ZAY_LTRB(panel, 0, 0, panel.w(), 40)
         {
             ZAY_RGB(panel, 220, 220, 255)
@@ -163,7 +163,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 // 통계정보
                 ZAY_RGB_IF(panel, 0, 0, 0, m->mHasConnected)
                 ZAY_RGB_IF(panel, 96, 96, 96, !m->mHasConnected)
-                    panel.text(String::Format("  VISITOR:%d   USER:%d   REALTIME:%d",
+                    panel.text(String::Format("  VISIT(%d)  USER(%d)  CCU(%d)",
                         m->mInfo_Total, m->mInfo_Member, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
             }
         }
@@ -217,15 +217,14 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     ZAY_RGB(panel, 220, 220, 255)
                     {
                         panel.fill();
+                        ZAY_FONT(panel, 3.0)
+                        ZAY_RGB(panel, 92, 92, 92)
+                        ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() * 0.3)
+                            panel.text(panel.w() / 2, panel.h() / 2, "★");
+                        ZAY_FONT(panel, 2.0)
                         ZAY_RGB(panel, 64, 64, 64)
-                        {
-                            ZAY_FONT(panel, 3.0)
-                            ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() * 0.3)
-                                panel.text(panel.w() / 2, panel.h() / 2, "★");
-                            ZAY_FONT(panel, 2.0)
-                            ZAY_LTRB(panel, 0, panel.h() * 0.3, panel.w(), panel.h() * 0.5)
-                                panel.text(panel.w() / 2, panel.h() / 2, String::Format("%04d", OneApp->mStar));
-                        }
+                        ZAY_LTRB(panel, 0, panel.h() * 0.3, panel.w(), panel.h() * 0.5)
+                            panel.text(panel.w() / 2, panel.h() / 2, String::Format("%04d", OneApp->mStar));
                     }
 
                     // 투표
@@ -239,17 +238,16 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             if(t == GT_InReleased)
                                 m->SendTurnHeart(AppName);
                         })
-                    ZAY_INNER(panel, (Pressed)? 12 : 10)
+                    ZAY_INNER_SCISSOR(panel, (Pressed)? 10 : 8)
                     ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mVoted)
                     ZAY_RGB_IF(panel, 80, 80, 80, !OneApp->mVoted)
                     {
                         ZAY_RGBA(panel, 128, 128, 128, (Focused)? 64 : 32)
                             panel.fill();
                         ZAY_FONT(panel, 1.5)
-                        {
-                            panel.rect(2);
                             panel.text((OneApp->mVoted)? "VOTED" : "VOTE");
-                        }
+                        ZAY_INNER(panel, 2)
+                            panel.rect(2);
                     }
                 }
             }
@@ -368,7 +366,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             panel.rect(1);
 
                     // 스캔에디터
-                    if(CurBox.mScanCB)
+                    if(CurBox.mTextCB)
                     {
                         const String DOMName = String::Format("dom_%d", i);
                         ZAY_COLOR(panel, CurBox.mColor)
@@ -378,7 +376,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             panel.repaint();
                     }
                     // 클릭박스
-                    else if(CurBox.mButtonCB)
+                    else if(CurBox.mClickCB)
                     {
                         ZAY_INNER_UI(panel, 0, UIName,
                             ZAY_GESTURE_T(t, i)
@@ -386,8 +384,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                             if(t == GT_InReleased)
                             {
                                 auto& CurBox = m->mBoxes[i];
-                                if(CurBox.mButtonCB)
-                                    CurBox.mButtonCB(CurBox.mLeft, CurBox.mTop);
+                                if(CurBox.mClickCB)
+                                    CurBox.mClickCB(CurBox.mLeft, CurBox.mTop);
                             }
                         });
                     }
@@ -405,7 +403,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 hueconsoleData::hueconsoleData()
 {
     gSelf = this;
-    ClearScreen(50, 25, Color::White);
+    ClearScreen(50, 25);
     mSocket = Platform::Socket::OpenForWS(false);
     Platform::Socket::ConnectAsync(mSocket, "220.121.14.168", 7993);
 
@@ -534,25 +532,26 @@ void hueconsoleData::RenderImeDialog(ZayPanel& panel)
     }
 }
 
-void hueconsoleData::ClearScreen(sint32 w, sint32 h, Color bgcolor)
+void hueconsoleData::ClearScreen(sint32 w, sint32 h)
 {
     if(gSelf)
     {
         gSelf->mCellWidth = Math::Max(1, w);
         gSelf->mCellHeight = Math::Max(1, h);
         gSelf->mCells.Clear();
+        gSelf->mCellFocus = 0;
+        gSelf->mClearColor = gSelf->mLastBGColor;
         for(sint32 i = 0, iend = gSelf->mCellWidth * gSelf->mCellHeight; i < iend; ++i)
         {
             auto& NewCell = gSelf->mCells.AtAdding();
             NewCell.mColor = Color::Black;
-            NewCell.mBGColor = bgcolor;
+            NewCell.mBGColor = gSelf->mClearColor;
             NewCell.mWrittenMsec = 0;
         }
-        GotoXY(0, 0);
-        gSelf->mLastBGColor = bgcolor;
-        gSelf->mClearBGColor = bgcolor;
         gSelf->mBoxes.Clear();
         gSelf->mGraphs.Clear();
+        gSelf->mScrollLog = 0;
+        gSelf->mScrollPhy = 0;
         // 윈도우타이틀
         if(0 < gSelf->mLastApp.Length())
             Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
@@ -616,7 +615,7 @@ void hueconsoleData::Print(String text)
     }
 }
 
-void hueconsoleData::Scan(sint32 w, ScanCB cb)
+void hueconsoleData::Scan(sint32 w, TextCB cb)
 {
     if(gSelf)
     {
@@ -637,26 +636,15 @@ void hueconsoleData::Scan(sint32 w, ScanCB cb)
         NewBox.mRight = X + Width;
         NewBox.mBottom = Y + 1;
         NewBox.mColor = gSelf->mLastColor;
-        NewBox.mScanCB = cb;
+        NewBox.mTextCB = cb;
 
         const sint32 BoxIdx = gSelf->mBoxes.Count() - 1;
         const String DOMName = String::Format("dom_%d", BoxIdx);
         ZayWidgetDOM::SetComment(DOMName, "");
-        ZayWidgetDOM::SetVariableFilter(DOMName,
-            [BoxIdx](const String& formula, const SolverValue& value, float reliable)->bool
-            {
-                if(formula[0] == '?')
-                {
-                    auto& CurBox = gSelf->mBoxes[BoxIdx];
-                    if(CurBox.mScanCB)
-                        CurBox.mScanCB(((chars) formula) + 1, 0);
-                }
-                return true;
-            });
     }
 }
 
-void hueconsoleData::Button(sint32 w, sint32 h, ButtonCB cb)
+void hueconsoleData::Button(sint32 w, sint32 h, ClickCB cb)
 {
     if(gSelf)
     {
@@ -676,7 +664,7 @@ void hueconsoleData::Button(sint32 w, sint32 h, ButtonCB cb)
         NewBox.mRight = X + Width;
         NewBox.mBottom = Y + h;
         NewBox.mColor = gSelf->mLastColor;
-        NewBox.mButtonCB = cb;
+        NewBox.mClickCB = cb;
     }
 }
 
@@ -726,6 +714,14 @@ void hueconsoleData::ImageTo(chars name, sint32 x, sint32 y)
     }
 }
 
+void hueconsoleData::Push(chars name, chars text)
+{
+}
+
+void hueconsoleData::Pop(chars name, sint32 count, TextCB cb)
+{
+}
+
 void hueconsoleData::Repaint()
 {
     if(gSelf)
@@ -744,7 +740,7 @@ void hueconsoleData::ValidCells(sint32 count)
     {
         auto& NewCell = mCells.AtAdding();
         NewCell.mColor = Color::Black;
-        NewCell.mBGColor = mClearBGColor;
+        NewCell.mBGColor = mClearColor;
         NewCell.mWrittenMsec = 0;
     }
 }
