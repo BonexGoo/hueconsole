@@ -28,9 +28,9 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             m->invalidate(2);
 
         // 웹소켓 연결직후
-        if(m->mFirstConnect && Platform::Socket::IsConnected(m->mSocket))
+        if(!m->mHasConnected && Platform::Socket::IsConnected(m->mSocket))
         {
-            m->mFirstConnect = false;
+            m->mHasConnected = true;
             m->SendGetToken();
             m->SendGetVisitor();
         }
@@ -149,15 +149,23 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
     if(m->mLastApp.Length() == 0)
     {
-        // 통계
+        // 정보필드
         ZAY_FONT(panel, 1.5)
         ZAY_LTRB(panel, 0, 0, panel.w(), 40)
         {
             ZAY_RGB(panel, 220, 220, 255)
+            {
                 panel.fill();
-            ZAY_RGB(panel, 0, 0, 0)
-                panel.text(String::Format("  VISITOR:%d   USER:%d   REALTIME:%d",
-                    m->mInfo_Total, m->mInfo_Member, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
+                // 빌드날짜
+                const String UpdateText = ZayWidgetDOM::GetValue("update").ToText();
+                ZAY_RGB(panel, 96, 96, 96)
+                    panel.text(panel.w() - 10, panel.h() / 2, UpdateText, UIFA_RightMiddle);
+                // 통계정보
+                ZAY_RGB_IF(panel, 0, 0, 0, m->mHasConnected)
+                ZAY_RGB_IF(panel, 96, 96, 96, !m->mHasConnected)
+                    panel.text(String::Format("  VISITOR:%d   USER:%d   REALTIME:%d",
+                        m->mInfo_Total, m->mInfo_Member, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
+            }
         }
 
         // 앱리스트
@@ -398,8 +406,17 @@ hueconsoleData::hueconsoleData()
 {
     gSelf = this;
     ClearScreen(50, 25, Color::White);
-    mSocket = Platform::Socket::OpenForWS(true);
+    mSocket = Platform::Socket::OpenForWS(false);
     Platform::Socket::ConnectAsync(mSocket, "220.121.14.168", 7993);
+
+    String DateText = __DATE__;
+    DateText.Replace("Jan", "01"); DateText.Replace("Feb", "02"); DateText.Replace("Mar", "03");
+    DateText.Replace("Apr", "04"); DateText.Replace("May", "05"); DateText.Replace("Jun", "06");
+    DateText.Replace("Jul", "07"); DateText.Replace("Aug", "08"); DateText.Replace("Sep", "09");
+    DateText.Replace("Oct", "10"); DateText.Replace("Nov", "11"); DateText.Replace("Dec", "12");
+    const String Day = String::Format("%02d", Parser::GetInt(DateText.Middle(2, DateText.Length() - 6).Trim()));
+    DateText = DateText.Right(4) + "/" + DateText.Left(2) + "/" + Day;
+    ZayWidgetDOM::SetValue("update", "'" + DateText + "'");
 }
 
 hueconsoleData::~hueconsoleData()

@@ -102,7 +102,7 @@ public: // IME관련
 
 public: // 웹소켓관련
     id_socket mSocket {nullptr};
-    bool mFirstConnect {true};
+    bool mHasConnected {false};
     uint08s mRecvQueue;
     String mToken;
     sint32 mInfo_Total {0};
