@@ -6,7 +6,9 @@ class App
 {
 public:
     sint32 mStar {0};
-    bool mVoted {false};
+    bool mStarVoted {false};
+    sint32 mOrderLog {0};
+    sint32 mOrderPhy {0};
     AppCB mCB {nullptr};
 };
 
@@ -69,6 +71,7 @@ public:
 
 private:
     void ValidCells(sint32 count);
+    void SortingApps(bool init);
 
 public:
     void SendGetToken();

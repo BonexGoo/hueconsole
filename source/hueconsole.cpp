@@ -35,8 +35,29 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
             m->SendGetVisitor();
         }
 
-        // 앱모드
-        if(0 < m->mLastApp.Length())
+        // 앱리스트
+        if(m->mLastApp.Length() == 0)
+        {
+            auto& AllApps = hueconsoleData::_AllApps();
+            for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
+            {
+                if(auto OneApp = AllApps.AccessByOrder(i))
+                {
+                    if(OneApp->mOrderPhy < OneApp->mOrderLog)
+                    {
+                        OneApp->mOrderPhy = Math::Min((OneApp->mOrderPhy * 8 + OneApp->mOrderLog * 2) / 10 + 1, OneApp->mOrderLog);
+                        m->invalidate(2);
+                    }
+                    else if(OneApp->mOrderLog < OneApp->mOrderPhy)
+                    {
+                        OneApp->mOrderPhy = Math::Max((OneApp->mOrderPhy * 8 + OneApp->mOrderLog * 2) / 10 - 1, OneApp->mOrderLog);
+                        m->invalidate(2);
+                    }
+                }
+            }
+        }
+        // 앱진입
+        else
         {
             // 스크롤처리
             if(!m->mScrollLock)
@@ -175,7 +196,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
         {
             chararray CurApp;
             if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
-            ZAY_LTRB_SCISSOR(panel, 0, panel.h() * i / iend + 10, panel.w(), panel.h() * (i + 1) / iend)
+            ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * (OneApp->mOrderPhy * 0.001) / iend + 10),
+                panel.w(), sint32(panel.h() * (OneApp->mOrderPhy * 0.001 + 1) / iend))
             {
                 // 배경
                 ZAY_RGB(panel, 255, 255, 255)
@@ -239,13 +261,13 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                                 m->SendTurnHeart(AppName);
                         })
                     ZAY_INNER_SCISSOR(panel, (Pressed)? 10 : 8)
-                    ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mVoted)
-                    ZAY_RGB_IF(panel, 80, 80, 80, !OneApp->mVoted)
+                    ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mStarVoted)
+                    ZAY_RGB_IF(panel, 80, 80, 80, !OneApp->mStarVoted)
                     {
                         ZAY_RGBA(panel, 128, 128, 128, (Focused)? 64 : 32)
                             panel.fill();
                         ZAY_FONT(panel, 1.5)
-                            panel.text((OneApp->mVoted)? "VOTED" : "VOTE");
+                            panel.text((OneApp->mStarVoted)? "VOTED" : "VOTE");
                         ZAY_INNER(panel, 2)
                             panel.rect(2);
                     }
@@ -255,7 +277,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     }
     else
     {
-        // 화면내용
+        // 앱내용
         ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
         {
             // 셀-바탕
@@ -406,6 +428,7 @@ hueconsoleData::hueconsoleData()
     ClearScreen(50, 25);
     mSocket = Platform::Socket::OpenForWS(false);
     Platform::Socket::ConnectAsync(mSocket, "220.121.14.168", 7993);
+    SortingApps(true);
 
     String DateText = __DATE__;
     DateText.Replace("Jan", "01"); DateText.Replace("Feb", "02"); DateText.Replace("Mar", "03");
@@ -745,6 +768,45 @@ void hueconsoleData::ValidCells(sint32 count)
     }
 }
 
+void hueconsoleData::SortingApps(bool init)
+{
+    // 점수화
+    sint32s ScoreCollector;
+    sint32 LastScore = 0;
+    auto& AllApps = hueconsoleData::_AllApps();
+    for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
+    {
+        chararray CurApp;
+        if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
+        {
+            const sint32 CurScore = OneApp->mStar * iend + (iend - i - 1) + 1;
+            ScoreCollector.AtWherever(i) = CurScore;
+            LastScore = Math::Max(LastScore, CurScore + 1);
+        }
+    }
+
+    // 소팅
+    for(sint32 i = 0, iend = ScoreCollector.Count(); i < iend; ++i)
+    {
+        sint32 BestScore = 0;
+        sint32 BestJ = 0;
+        for(sint32 j = 0, jend = ScoreCollector.Count(); j < jend; ++j)
+        {
+            if(ScoreCollector[j] < LastScore && BestScore < ScoreCollector[j])
+            {
+                BestScore = ScoreCollector[j];
+                BestJ = j;
+            }
+        }
+        LastScore = BestScore;
+        if(auto OneApp = AllApps.AccessByOrder(BestJ))
+        {
+            OneApp->mOrderLog = i * 1000;
+            if(init) OneApp->mOrderPhy = i * 1000;
+        }
+    }
+}
+
 void hueconsoleData::SendGetToken()
 {
     Context NewPacket;
@@ -848,6 +910,7 @@ void hueconsoleData::OnRecv_Heart(const Context& json)
     if(auto OneApp = AllApps.Access(OneItem))
     {
         OneApp->mStar = json("score").GetInt();
-        OneApp->mVoted = json("yours").GetInt();
+        OneApp->mStarVoted = json("yours").GetInt();
+        SortingApps(false);
     }
 }
