@@ -737,11 +737,11 @@ void hueconsoleData::ImageTo(chars name, sint32 x, sint32 y)
     }
 }
 
-void hueconsoleData::Push(chars name, chars text)
+void hueconsoleData::SetLoader(chars name, sint32 recent, BinaryCB cb)
 {
 }
 
-void hueconsoleData::Pop(chars name, sint32 count, TextCB cb)
+void hueconsoleData::Save(chars name, bytes data, int length)
 {
 }
 

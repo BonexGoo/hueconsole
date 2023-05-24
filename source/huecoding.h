@@ -9,6 +9,7 @@
     typedef void (*AppCB)();
     typedef void (*TextCB)(const char* text);
     typedef void (*ClickCB)(int x, int y);
+    typedef void (*BinaryCB)(const void* data, int length);
     int _declareapp(const char* app, AppCB cb);
 
     // 공개부
@@ -23,8 +24,8 @@
     void rect(int x, int y);
     void circle(int x, int y);
     void image(int x, int y, const char* name);
-    void push(const char* name, const char* text);
-    void pop(const char* name, int count, TextCB cb);
+    void setloader(const char* name, int recent, BinaryCB cb);
+    void save(const char* name, const void* data, int length);
     void repaint();
 
 #ifdef __cplusplus

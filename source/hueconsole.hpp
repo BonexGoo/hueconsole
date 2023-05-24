@@ -65,8 +65,8 @@ public:
     static void GotoXY(sint32 x, sint32 y);
     static void GraphTo(Graph::Type type, sint32 x, sint32 y);
     static void ImageTo(chars name, sint32 x, sint32 y);
-    static void Push(chars name, chars text);
-    static void Pop(chars name, sint32 count, TextCB cb);
+    static void SetLoader(chars name, sint32 recent, BinaryCB cb);
+    static void Save(chars name, bytes data, int length);
     static void Repaint();
 
 private:
