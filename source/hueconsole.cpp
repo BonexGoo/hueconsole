@@ -3,6 +3,7 @@
 
 #include <resource.hpp>
 #include <service/boss_zaywidget.hpp>
+#include <base64/base64.h>
 
 ZAY_DECLARE_VIEW_CLASS("hueconsoleView", hueconsoleData)
 
@@ -739,10 +740,24 @@ void hueconsoleData::ImageTo(chars name, sint32 x, sint32 y)
 
 void hueconsoleData::SetLoader(chars name, sint32 recent, BinaryCB cb)
 {
+    if(gSelf)
+    {
+        if(cb)
+        {
+            gSelf->mLoaders(name) = cb;
+            gSelf->SendLoadData(name, recent);
+        }
+        else gSelf->mLoaders.Remove(name);
+    }
 }
 
-void hueconsoleData::Save(chars name, bytes data, int length)
+void hueconsoleData::Save(chars name, bytes data, sint32 length)
 {
+    if(gSelf)
+    {
+        auto NewText = base64_encode(data, length);
+        gSelf->SendSaveData(name, NewText.c_str());
+    }
 }
 
 void hueconsoleData::Repaint()
@@ -843,6 +858,28 @@ void hueconsoleData::SendTurnHeart(chars item)
     Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
 }
 
+void hueconsoleData::SendSaveData(chars key, chars base64)
+{
+    Context NewPacket;
+    NewPacket.At("type").Set("SaveData");
+    NewPacket.At("token").Set(mToken);
+    NewPacket.At("key").Set(key);
+    NewPacket.At("base64").Set(base64);
+    const String NewJson = NewPacket.SaveJson();
+    Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
+}
+
+void hueconsoleData::SendLoadData(chars key, sint32 recent)
+{
+    Context NewPacket;
+    NewPacket.At("type").Set("LoadData");
+    NewPacket.At("token").Set(mToken);
+    NewPacket.At("key").Set(key);
+    NewPacket.At("recent").Set(String::FromInteger(recent));
+    const String NewJson = NewPacket.SaveJson();
+    Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
+}
+
 bool hueconsoleData::RecvOnce()
 {
     bool NeedUpdate = false;
@@ -882,6 +919,7 @@ void hueconsoleData::OnRecvMessage(chars message)
     jump(!Type.Compare("Token")) OnRecv_Token(RecvJson);
     jump(!Type.Compare("Visitor")) OnRecv_Visitor(RecvJson);
     jump(!Type.Compare("Heart")) OnRecv_Heart(RecvJson);
+    jump(!Type.Compare("DataUpdated")) OnRecv_DataUpdated(RecvJson);
 }
 
 void hueconsoleData::OnRecv_Token(const Context& json)
@@ -912,5 +950,16 @@ void hueconsoleData::OnRecv_Heart(const Context& json)
         OneApp->mStar = json("score").GetInt();
         OneApp->mStarVoted = json("yours").GetInt();
         SortingApps(false);
+    }
+}
+
+void hueconsoleData::OnRecv_DataUpdated(const Context& json)
+{
+    const String OneKey = json("key").GetText();
+    if(auto OneBinaryCB = mLoaders.Access(OneKey))
+    {
+        const String OneBase64 = json("base64").GetText();
+        auto NewBinary = base64_decode((chars) OneBase64);
+        (*OneBinaryCB)((const void*) NewBinary.data(), NewBinary.length());
     }
 }

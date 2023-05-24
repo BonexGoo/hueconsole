@@ -21,12 +21,14 @@ HEADERS += ../source-gen/boss_buildtag.hpp
 
 INCLUDEPATH += ../source
 SOURCES += ../source/huecoding.cpp
-HEADERS += ../source/huecoding.hpp
+HEADERS += ../source/huecoding.h
 SOURCES += ../source/hueconsole.cpp
 HEADERS += ../source/hueconsole.hpp
 SOURCES += ../source/main.cpp
 SOURCES += ../source/resource.cpp
 HEADERS += ../source/resource.hpp
+SOURCES += ../source/base64/base64.cpp
+HEADERS += ../source/base64/base64.h
 
 INCLUDEPATH += ../huecoding
 SOURCES += ../huecoding/bonexgoo.cpp

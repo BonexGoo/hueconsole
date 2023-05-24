@@ -29,6 +29,11 @@ void googoodan()
     setcolor("#000000");
 }
 
+void OnBinary(const void* data, int length)
+{
+    print("\n text : %.*s", length, data);
+}
+
 HUE_DECLARE_APP("Postal", postal)
 void postal()
 {
@@ -46,4 +51,7 @@ void postal()
     setcolor("#000000");
     gotoxy(3, 3);
     print("HELLO");
+
+    setloader("aaa.bbb.ccc", 5, OnBinary);
+    save("aaa.bbb.ccc", "HelloWorld!!!", 13);
 }

@@ -66,7 +66,7 @@ public:
     static void GraphTo(Graph::Type type, sint32 x, sint32 y);
     static void ImageTo(chars name, sint32 x, sint32 y);
     static void SetLoader(chars name, sint32 recent, BinaryCB cb);
-    static void Save(chars name, bytes data, int length);
+    static void Save(chars name, bytes data, sint32 length);
     static void Repaint();
 
 private:
@@ -78,11 +78,14 @@ public:
     void SendGetVisitor();
     void SendGetHeart(chars item);
     void SendTurnHeart(chars item);
+    void SendSaveData(chars key, chars base64);
+    void SendLoadData(chars key, sint32 recent);
     bool RecvOnce();
     void OnRecvMessage(chars message);
     void OnRecv_Token(const Context& json);
     void OnRecv_Visitor(const Context& json);
     void OnRecv_Heart(const Context& json);
+    void OnRecv_DataUpdated(const Context& json);
 
 public:
     String mLastApp;
@@ -113,6 +116,7 @@ public: // 웹소켓관련
     sint32 mInfo_Total {0};
     sint32 mInfo_Member {0};
     sint32 mInfo_RealTime {0};
+    Map<BinaryCB> mLoaders;
 
 public:
     static inline Map<App>& _AllApps()

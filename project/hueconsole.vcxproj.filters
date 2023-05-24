@@ -13,6 +13,9 @@
     <Filter Include="huecoding">
       <UniqueIdentifier>{d7b28e84-810f-47b8-a40f-785e5387a7cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\base64">
+      <UniqueIdentifier>{9b059d2d-682c-4687-b68a-2d85b3668acd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\common\windows\main.aps">
@@ -48,6 +51,9 @@
     <ClInclude Include="..\source\huecoding.h">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\base64\base64.h">
+      <Filter>source\base64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\hueconsole.cpp">
@@ -70,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="..\huecoding\bonexgoo.cpp">
       <Filter>huecoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\base64\base64.cpp">
+      <Filter>source\base64</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
