@@ -85,14 +85,14 @@ void image(int x, int y, const char* name)
     hueconsoleData::ImageTo(name, x, y);
 }
 
-void setloader(const char* name, int recent, BinaryCB cb)
+void listen(const char* key, int recent, BinaryCB cb)
 {
-    hueconsoleData::SetLoader(name, recent, cb);
+    hueconsoleData::Listen(key, recent, cb);
 }
 
-void save(const char* name, const void* data, int length)
+void send(const char* key, const void* data, int length)
 {
-    hueconsoleData::Save(name, (bytes) data, length);
+    hueconsoleData::Send(key, (bytes) data, length);
 }
 
 void repaint()

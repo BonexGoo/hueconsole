@@ -24,8 +24,8 @@
     void rect(int x, int y);
     void circle(int x, int y);
     void image(int x, int y, const char* name);
-    void setloader(const char* name, int recent, BinaryCB cb);
-    void save(const char* name, const void* data, int length);
+    void listen(const char* key, int recent, BinaryCB cb);
+    void send(const char* key, const void* data, int length);
     void repaint();
 
 #ifdef __cplusplus

@@ -32,8 +32,8 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         if(!m->mHasConnected && Platform::Socket::IsConnected(m->mSocket))
         {
             m->mHasConnected = true;
-            m->SendGetToken();
-            m->SendGetVisitor();
+            m->Send_GetToken();
+            m->Send_GetVisitor();
         }
 
         // 앱리스트
@@ -259,7 +259,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                         ZAY_GESTURE_T(t, AppName)
                         {
                             if(t == GT_InReleased)
-                                m->SendTurnHeart(AppName);
+                                m->Send_TurnHeart(AppName);
                         })
                     ZAY_INNER_SCISSOR(panel, (Pressed)? 10 : 8)
                     ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mStarVoted)
@@ -738,25 +738,29 @@ void hueconsoleData::ImageTo(chars name, sint32 x, sint32 y)
     }
 }
 
-void hueconsoleData::SetLoader(chars name, sint32 recent, BinaryCB cb)
+void hueconsoleData::Listen(chars key, sint32 recent, BinaryCB cb)
 {
     if(gSelf)
     {
-        if(cb)
+        if(0 < recent && cb)
         {
-            gSelf->mLoaders(name) = cb;
-            gSelf->SendLoadData(name, recent);
+            gSelf->mLoaders(key) = cb;
+            gSelf->Send_ListenData(key, recent);
         }
-        else gSelf->mLoaders.Remove(name);
+        else
+        {
+            gSelf->mLoaders.Remove(key);
+            gSelf->Send_ListenData(key, 0);
+        }
     }
 }
 
-void hueconsoleData::Save(chars name, bytes data, sint32 length)
+void hueconsoleData::Send(chars key, bytes data, sint32 length)
 {
     if(gSelf)
     {
         auto NewText = base64_encode(data, length);
-        gSelf->SendSaveData(name, NewText.c_str());
+        gSelf->Send_SendData(key, NewText.c_str());
     }
 }
 
@@ -822,7 +826,7 @@ void hueconsoleData::SortingApps(bool init)
     }
 }
 
-void hueconsoleData::SendGetToken()
+void hueconsoleData::Send_GetToken()
 {
     Context NewPacket;
     NewPacket.At("type").Set("GetToken");
@@ -830,7 +834,7 @@ void hueconsoleData::SendGetToken()
     Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
 }
 
-void hueconsoleData::SendGetVisitor()
+void hueconsoleData::Send_GetVisitor()
 {
     Context NewPacket;
     NewPacket.At("type").Set("GetVisitor");
@@ -838,7 +842,7 @@ void hueconsoleData::SendGetVisitor()
     Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
 }
 
-void hueconsoleData::SendGetHeart(chars item)
+void hueconsoleData::Send_GetHeart(chars item)
 {
     Context NewPacket;
     NewPacket.At("type").Set("GetHeart");
@@ -848,7 +852,7 @@ void hueconsoleData::SendGetHeart(chars item)
     Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
 }
 
-void hueconsoleData::SendTurnHeart(chars item)
+void hueconsoleData::Send_TurnHeart(chars item)
 {
     Context NewPacket;
     NewPacket.At("type").Set("TurnHeart");
@@ -858,10 +862,10 @@ void hueconsoleData::SendTurnHeart(chars item)
     Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
 }
 
-void hueconsoleData::SendSaveData(chars key, chars base64)
+void hueconsoleData::Send_SendData(chars key, chars base64)
 {
     Context NewPacket;
-    NewPacket.At("type").Set("SaveData");
+    NewPacket.At("type").Set("SendData");
     NewPacket.At("token").Set(mToken);
     NewPacket.At("key").Set(key);
     NewPacket.At("base64").Set(base64);
@@ -869,10 +873,10 @@ void hueconsoleData::SendSaveData(chars key, chars base64)
     Platform::Socket::Send(mSocket, (bytes)(chars) NewJson, NewJson.Length(), 3000, true);
 }
 
-void hueconsoleData::SendLoadData(chars key, sint32 recent)
+void hueconsoleData::Send_ListenData(chars key, sint32 recent)
 {
     Context NewPacket;
-    NewPacket.At("type").Set("LoadData");
+    NewPacket.At("type").Set("ListenData");
     NewPacket.At("token").Set(mToken);
     NewPacket.At("key").Set(key);
     NewPacket.At("recent").Set(String::FromInteger(recent));
@@ -930,7 +934,7 @@ void hueconsoleData::OnRecv_Token(const Context& json)
     {
         chararray CurApp;
         if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
-            SendGetHeart(&CurApp[0]);
+            Send_GetHeart(&CurApp[0]);
     }
 }
 

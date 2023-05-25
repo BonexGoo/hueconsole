@@ -65,8 +65,8 @@ public:
     static void GotoXY(sint32 x, sint32 y);
     static void GraphTo(Graph::Type type, sint32 x, sint32 y);
     static void ImageTo(chars name, sint32 x, sint32 y);
-    static void SetLoader(chars name, sint32 recent, BinaryCB cb);
-    static void Save(chars name, bytes data, sint32 length);
+    static void Listen(chars key, sint32 recent, BinaryCB cb);
+    static void Send(chars key, bytes data, sint32 length);
     static void Repaint();
 
 private:
@@ -74,12 +74,12 @@ private:
     void SortingApps(bool init);
 
 public:
-    void SendGetToken();
-    void SendGetVisitor();
-    void SendGetHeart(chars item);
-    void SendTurnHeart(chars item);
-    void SendSaveData(chars key, chars base64);
-    void SendLoadData(chars key, sint32 recent);
+    void Send_GetToken();
+    void Send_GetVisitor();
+    void Send_GetHeart(chars item);
+    void Send_TurnHeart(chars item);
+    void Send_SendData(chars key, chars base64);
+    void Send_ListenData(chars key, sint32 recent);
     bool RecvOnce();
     void OnRecvMessage(chars message);
     void OnRecv_Token(const Context& json);

@@ -29,29 +29,27 @@ void googoodan()
     setcolor("#000000");
 }
 
-void OnBinary(const void* data, int length)
+////////////////////////////////////////////////////////////////////////////////
+
+void OnTalk(const char* text)
 {
-    print("\n text : %.*s", length, data);
+    send("postal.talk", text, boss_strlen(text));
 }
 
-HUE_DECLARE_APP("Postal", postal)
-void postal()
+void OnBinary(const void* data, int length)
+{
+    print("\n >> %.*s", length, data);
+}
+
+HUE_DECLARE_APP("FreeTalk", freetalk)
+void freetalk()
 {
     setcolor("#808080");
-    gotoxy(1, 2);
-    image(10, 5, "ok_over");
+    gotoxy(11, 1);
+    image(14, 4, "ok_over");
 
-    setcolor("#ff0000");
-    gotoxy(3, 3);
-    line(8, 3);
-    line(8, 4);
-    line(3, 4);
-    line(3, 3);
-
-    setcolor("#000000");
-    gotoxy(3, 3);
-    print("HELLO");
-
-    setloader("aaa.bbb.ccc", 5, OnBinary);
-    save("aaa.bbb.ccc", "HelloWorld!!!", 13);
+    gotoxy(2, 2);
+    scan(8, OnTalk);
+    
+    listen("postal.talk", 10, OnBinary);
 }
