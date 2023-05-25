@@ -71,10 +71,7 @@
     <ClCompile Include="..\source\huecoding.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\huecoding\study.cpp">
-      <Filter>huecoding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\huecoding\bonexgoo.cpp">
+    <ClCompile Include="..\huecoding\example.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
     <ClCompile Include="..\source\base64\base64.cpp">

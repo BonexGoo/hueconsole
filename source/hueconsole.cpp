@@ -402,15 +402,20 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                     else if(CurBox.mClickCB)
                     {
                         ZAY_INNER_UI(panel, 0, UIName,
-                            ZAY_GESTURE_T(t, i)
-                        {
-                            if(t == GT_InReleased)
+                            ZAY_GESTURE_VNTXY(v, n, t, x, y, i)
                             {
-                                auto& CurBox = m->mBoxes[i];
-                                if(CurBox.mClickCB)
-                                    CurBox.mClickCB(CurBox.mLeft, CurBox.mTop);
-                            }
-                        });
+                                if(t == GT_InReleased)
+                                {
+                                    auto& CurBox = m->mBoxes[i];
+                                    if(CurBox.mClickCB)
+                                    {
+                                        auto OneRect = v->rect(n);
+                                        const sint32 X = CurBox.mLeft + (CurBox.mRight - CurBox.mLeft) * (x - OneRect.l) / (OneRect.r - OneRect.l);
+                                        const sint32 Y = CurBox.mTop + (CurBox.mBottom - CurBox.mTop) * (y - OneRect.t) / (OneRect.b - OneRect.t);
+                                        CurBox.mClickCB(X, Y);
+                                    }
+                                }
+                            });
                     }
                 }
             }

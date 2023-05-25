@@ -37,9 +37,8 @@
     <ClInclude Include="..\source\resource.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\huecoding\bonexgoo.cpp" />
+    <ClCompile Include="..\huecoding\example.cpp" />
     <ClCompile Include="..\huecoding\helloworld.cpp" />
-    <ClCompile Include="..\huecoding\study.cpp" />
     <ClCompile Include="..\source\base64\base64.cpp" />
     <ClCompile Include="..\source\huecoding.cpp" />
     <ClCompile Include="..\source\hueconsole.cpp" />
