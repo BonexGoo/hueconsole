@@ -59,10 +59,6 @@ void freetalk()
 const char* LastColor = "#000000";
 void OnClick(int x, int y)
 {
-    setcolor(LastColor);
-    gotoxy(x, y);
-    circle(x + 1, y + 1);
-
     char Pixel[8];
     Pixel[0] = x;
     Pixel[1] = y;
@@ -77,15 +73,23 @@ void OnClick(int x, int y)
 
 void RecvClick(const void* data, int length)
 {
-    if(length != 8) return;
+    if(length < 2) return;
     auto Pixel = (char*) data;
     int X = Pixel[0];
     int Y = Pixel[1];
-    const char Color[8] = {'#', Pixel[2], Pixel[3], Pixel[4], Pixel[5], Pixel[6], Pixel[7], '\0'};
-
-    setcolor(Color);
-    gotoxy(X, Y);
-    circle(X + 1, Y + 1);
+    if(X == -1 && Y == -1)
+    {
+        setcolor("#ffffff");
+        gotoxy(1, 1);
+        rect(51, 51);
+    }
+    else if(length == 8)
+    {
+        const char Color[8] = {'#', Pixel[2], Pixel[3], Pixel[4], Pixel[5], Pixel[6], Pixel[7], '\0'};
+        setcolor(Color);
+        gotoxy(X, Y);
+        circle(X + 1, Y + 1);
+    }
 }
 
 void OnRed(int x, int y)
@@ -111,6 +115,14 @@ void OnBlack(int x, int y)
 void OnWhite(int x, int y)
 {
     LastColor = "#ffffff";
+}
+
+void OnRemove(int x, int y)
+{
+    char Pixel[2];
+    Pixel[0] = -1;
+    Pixel[1] = -1;
+    send("iconeditor.pixel", Pixel, 2);
 }
 
 HUE_DECLARE_APP("IconEditor", iconeditor)
@@ -157,6 +169,15 @@ void iconeditor()
     gotoxy(30, 53);
     button(5, 5, OnWhite);
     rect(35, 58);
+
+    // 지우개
+    setcolor("#808080");
+    gotoxy(45, 53);
+    button(5, 5, OnRemove);
+    rect(50, 58);
+    setcolor("#ff0000");
+    gotoxy(45, 53);
+    line(50, 58);
 
     listen("iconeditor.pixel", 500, RecvClick);
 }

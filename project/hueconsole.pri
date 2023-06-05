@@ -32,7 +32,7 @@ HEADERS += ../source/base64/base64.h
 
 INCLUDEPATH += ../huecoding
 SOURCES += ../huecoding/example.cpp
-SOURCES += ../huecoding/helloworld.cpp
+SOURCES += ../huecoding/yourname.cpp
 
 ASSETS_IMAGE.files += ../assets/image
 ASSETS_IMAGE.path = /assets

@@ -65,7 +65,7 @@
     <ClCompile Include="..\source\resource.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\huecoding\helloworld.cpp">
+    <ClCompile Include="..\huecoding\yourname.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
     <ClCompile Include="..\source\huecoding.cpp">
