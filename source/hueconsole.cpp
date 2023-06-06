@@ -210,7 +210,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
                 // 앱버튼
                 const String UIApp = String::Format("ui_app_%d", i);
-                ZAY_LTRB_UI(panel, 0, 0, panel.w() - 100, panel.h(), UIApp,
+                ZAY_LTRB_UI(panel, 0, 0, panel.w() - 150, panel.h(), UIApp,
                     ZAY_GESTURE_T(t, CurApp)
                     {
                         if(t == GT_InReleased)
