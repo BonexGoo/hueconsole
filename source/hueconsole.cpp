@@ -185,8 +185,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 // 통계정보
                 ZAY_RGB_IF(panel, 0, 0, 0, m->mHasConnected)
                 ZAY_RGB_IF(panel, 96, 96, 96, !m->mHasConnected)
-                    panel.text(String::Format("  VISIT(%d)  USER(%d)  CCU(%d)",
-                        m->mInfo_Total, m->mInfo_Member, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
+                    panel.text(String::Format("  방문 %d회 / 실시간 %d명", m->mInfo_Total, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
             }
         }
 
@@ -234,7 +233,7 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
                 }
 
                 // 앱정보
-                ZAY_LTRB(panel, panel.w() - 100, 0, panel.w(), panel.h())
+                ZAY_LTRB(panel, panel.w() - 150, 0, panel.w(), panel.h())
                 {
                     // 별점
                     ZAY_RGB(panel, 220, 220, 255)

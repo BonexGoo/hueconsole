@@ -9,7 +9,7 @@ void OnDan(const char* text)
 {
     int dan = boss_atoi(text);
 
-    print("\n [%i DAN]\n", dan);
+    print("\n [%i 단]\n", dan);
     for(int i = 1; i <= 9; ++i)
         print(" %i x %i = %2i\n", dan, i, dan * i);
 
@@ -18,11 +18,11 @@ void OnDan(const char* text)
     print(" Retry \n");
 }
 
-HUE_DECLARE_APP("GooGooDan", googoodan)
+HUE_DECLARE_APP("구구단", googoodan)
 void googoodan()
 {
     clrscr(60, 20);
-    print("\n Please type the DAN(2~9) you want : ");
+    print("\n 원하는 구구단을 적어봐요(2~9) : ");
 
     setcolor("#ff0000");
     scan(4, OnDan);
@@ -41,7 +41,7 @@ void RecvTalk(const void* data, int length)
     print("\n >> %.*s", length, data);
 }
 
-HUE_DECLARE_APP("FreeTalk", freetalk)
+HUE_DECLARE_APP("우리톡톡", freetalk)
 void freetalk()
 {
     setcolor("#808080");
@@ -125,7 +125,7 @@ void OnRemove(int x, int y)
     send("iconeditor.pixel", Pixel, 2);
 }
 
-HUE_DECLARE_APP("IconEditor", iconeditor)
+HUE_DECLARE_APP("아이콘에디터", iconeditor)
 void iconeditor()
 {
     setbgcolor("#808080");
