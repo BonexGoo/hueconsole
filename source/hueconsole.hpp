@@ -53,6 +53,8 @@ public:
     ~hueconsoleData();
 
 public:
+    void RenderApp(ZayPanel& panel);
+    void RenderLobby(ZayPanel& panel);
     void RenderImeDialog(ZayPanel& panel);
 
 public:
@@ -102,6 +104,7 @@ public:
     sint32 mScrollLog {0};
     sint32 mScrollPhy {0};
     uint64 mUpdateMsec {0};
+    String mSystemFont;
 
 public: // IME관련
     point64 mImePosLog {0, 0};

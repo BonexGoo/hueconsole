@@ -169,261 +169,18 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     ZAY_RGB(panel, 192, 192, 192)
         panel.fill();
 
-    if(m->mLastApp.Length() == 0)
+    ZAY_FONT(panel, 1.0, m->mSystemFont)
     {
-        // 정보필드
-        ZAY_FONT(panel, 1.2)
-        ZAY_LTRB(panel, 0, 0, panel.w(), 40)
+        if(0 < m->mLastApp.Length())
         {
-            ZAY_RGB(panel, 220, 220, 255)
-            {
-                panel.fill();
-                // 빌드날짜
-                const String UpdateText = ZayWidgetDOM::GetValue("update").ToText();
-                ZAY_RGB(panel, 96, 96, 96)
-                    panel.text(panel.w() - 10, panel.h() / 2, UpdateText, UIFA_RightMiddle);
-                // 통계정보
-                ZAY_RGB_IF(panel, 0, 0, 0, m->mHasConnected)
-                ZAY_RGB_IF(panel, 96, 96, 96, !m->mHasConnected)
-                    panel.text(String::Format("  방문 %d회 / 실시간 %d명", m->mInfo_Total, m->mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
-            }
+            ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
+                m->RenderApp(panel);
+            // 가상키보드
+            ZAY_FONT(panel, 1.5)
+            ZAY_XYWH(panel, panel.w() / 2 - (30 * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, 30 * 10, 30 * 4)
+                m->RenderImeDialog(panel);
         }
-
-        // 앱리스트
-        auto& AllApps = hueconsoleData::_AllApps();
-        ZAY_LTRB(panel, 10, 40, panel.w() - 10, panel.h() - 10)
-        for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
-        {
-            chararray CurApp;
-            if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
-            ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * (OneApp->mOrderPhy * 0.001) / iend + 10),
-                panel.w(), sint32(panel.h() * (OneApp->mOrderPhy * 0.001 + 1) / iend))
-            {
-                // 배경
-                ZAY_RGB(panel, 255, 255, 255)
-                {
-                    ZAY_RGBA(panel, 128, 128, 128, 120)
-                        panel.fill();
-                    ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
-                        panel.fill();
-                }
-
-                // 앱버튼
-                const String UIApp = String::Format("ui_app_%d", i);
-                ZAY_LTRB_UI(panel, 0, 0, panel.w() - 150, panel.h(), UIApp,
-                    ZAY_GESTURE_T(t, CurApp)
-                    {
-                        if(t == GT_InReleased)
-                        {
-                            auto& AllApps = hueconsoleData::_AllApps();
-                            if(auto OneApp = AllApps.Access(&CurApp[0]))
-                            {
-                                m->mLastApp = &CurApp[0];
-                                // 윈도우타이틀
-                                Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
-                                    (chars) m->mLastApp, m->mCellWidth, m->mCellHeight));
-                                OneApp->mCB();
-                            }
-                        }
-                    })
-                {
-                    ZAY_FONT(panel, 2.0)
-                    ZAY_RGB(panel, 0, 0, 0)
-                        panel.text(&CurApp[0], UIFA_CenterMiddle, UIFE_Right);
-                }
-
-                // 앱정보
-                ZAY_LTRB(panel, panel.w() - 150, 0, panel.w(), panel.h())
-                {
-                    // 별점
-                    ZAY_RGB(panel, 220, 220, 255)
-                    {
-                        panel.fill();
-                        ZAY_FONT(panel, 3.0)
-                        ZAY_RGB(panel, 92, 92, 92)
-                        ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() * 0.3)
-                            panel.text(panel.w() / 2, panel.h() / 2, "★");
-                        ZAY_FONT(panel, 2.0)
-                        ZAY_RGB(panel, 64, 64, 64)
-                        ZAY_LTRB(panel, 0, panel.h() * 0.3, panel.w(), panel.h() * 0.5)
-                            panel.text(panel.w() / 2, panel.h() / 2, String::Format("%04d", OneApp->mStar));
-                    }
-
-                    // 투표
-                    const String AppName(&CurApp[0]);
-                    const String UIVote = String::Format("ui_vote_%d", i);
-                    const bool Focused = ((panel.state(UIVote) & (PS_Focused | PS_Dropping)) == PS_Focused);
-                    const bool Pressed = ((panel.state(UIVote) & (PS_Pressed | PS_Dragging)) != 0);
-                    ZAY_LTRB_UI(panel, 0, panel.h() * 0.5, panel.w(), panel.h(), UIVote,
-                        ZAY_GESTURE_T(t, AppName)
-                        {
-                            if(t == GT_InReleased)
-                                m->Send_TurnHeart(AppName);
-                        })
-                    ZAY_INNER_SCISSOR(panel, (Pressed)? 10 : 8)
-                    ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mStarVoted)
-                    ZAY_RGB_IF(panel, 80, 80, 80, !OneApp->mStarVoted)
-                    {
-                        ZAY_RGBA(panel, 128, 128, 128, (Focused)? 64 : 32)
-                            panel.fill();
-                        ZAY_FONT(panel, 1.5)
-                            panel.text((OneApp->mStarVoted)? "VOTED" : "VOTE");
-                        ZAY_INNER(panel, 2)
-                            panel.rect(2);
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        // 앱내용
-        ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
-        {
-            // 셀-바탕
-            for(sint32 y = 0, yend = m->mCells.Count() / m->mCellWidth; y < yend; ++y)
-            {
-                ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * y / m->mCellHeight),
-                    panel.w(), sint32(panel.h() * (y + 1) / m->mCellHeight))
-                for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
-                {
-                    const auto& CurCell = m->mCells[x + y * xend];
-                    const bool ExtendFont = (1 < CurCell.mLetter.Length());
-                    ZAY_LTRB(panel, sint32(panel.w() * x / m->mCellWidth), 0,
-                        sint32(panel.w() * (x + 1 + ExtendFont) / m->mCellWidth), panel.h())
-                    {
-                        ZAY_COLOR(panel, CurCell.mBGColor)
-                        {
-                            ZAY_RGBA(panel, 128, 128, 128, 120)
-                                panel.fill();
-                            ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
-                                panel.fill();
-                        }
-                    }
-                    if(ExtendFont) x++;
-                }
-            }
-
-            // 그래프
-            for(sint32 i = 0, iend = m->mGraphs.Count(); i < iend; ++i)
-            {
-                auto& CurGraph = m->mGraphs[i];
-                ZAY_COLOR(panel, CurGraph.mColor)
-                switch(CurGraph.mType)
-                {
-                case Graph::Type::Line:
-                    panel.line(
-                        Point(sint32(panel.w() * CurGraph.mXBegin / m->mCellWidth),
-                            sint32(panel.h() * CurGraph.mYBegin / m->mCellHeight)),
-                        Point(sint32(panel.w() * CurGraph.mXEnd / m->mCellWidth),
-                            sint32(panel.h() * CurGraph.mYEnd / m->mCellHeight)), 2);
-                    break;
-                case Graph::Type::Rect:
-                    ZAY_LTRB(panel,
-                        sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
-                        sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight),
-                        sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
-                        sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight))
-                        panel.fill();
-                    break;
-                case Graph::Type::Circle:
-                    ZAY_LTRB(panel,
-                        sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
-                        sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight),
-                        sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
-                        sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight))
-                        panel.circle();
-                    break;
-                case Graph::Type::Image:
-                    ZAY_RGBA(panel, 128, 128, 128, -128)
-                    ZAY_LTRB(panel,
-                        sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
-                        sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight),
-                        sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / m->mCellWidth),
-                        sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / m->mCellHeight))
-                        panel.ninepatch(R(CurGraph.mImage));
-                    break;
-                }
-            }
-
-            // 셀-텍스트
-            const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
-            const sint32 FreeSpace = panel.h() / m->mCellHeight * 2;
-            for(sint32 y = 0, yend = m->mCells.Count() / m->mCellWidth; y < yend; ++y)
-            {
-                ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * y / m->mCellHeight) - FreeSpace,
-                    panel.w(), sint32(panel.h() * (y + 1) / m->mCellHeight) + FreeSpace)
-                for(sint32 x = 0, xend = m->mCellWidth; x < xend; ++x)
-                {
-                    const auto& CurCell = m->mCells[x + y * xend];
-                    const bool ExtendFont = (1 < CurCell.mLetter.Length());
-                    ZAY_LTRB(panel, sint32(panel.w() * x / m->mCellWidth), FreeSpace,
-                        sint32(panel.w() * (x + 1 + ExtendFont) / m->mCellWidth), panel.h() - FreeSpace)
-                    {
-                        const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
-                        ZAY_COLOR(panel, CurCell.mColor)
-                        ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
-                            panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter, UIFA_CenterMiddle);
-                    }
-                    if(ExtendFont) x++;
-                }
-            }
-
-            // 박스
-            for(sint32 i = 0, iend = m->mBoxes.Count(); i < iend; ++i)
-            {
-                auto& CurBox = m->mBoxes[i];
-                const String UIName = String::Format("ui_%d", i);
-                ZAY_LTRB(panel,
-                    panel.w() * CurBox.mLeft / m->mCellWidth,
-                    panel.h() * CurBox.mTop / m->mCellHeight,
-                    panel.w() * CurBox.mRight / m->mCellWidth,
-                    panel.h() * CurBox.mBottom / m->mCellHeight)
-                {
-                    const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
-                    ZAY_COLOR(panel, CurBox.mColor)
-                    for(sint32 j = 0, jend = (Focused)? 4 : 2; j < jend; ++j)
-                        ZAY_INNER(panel, -j)
-                        ZAY_RGBA(panel, 128, 128, 128, 128 - (128 / jend) * j)
-                            panel.rect(1);
-
-                    // 스캔에디터
-                    if(CurBox.mTextCB)
-                    {
-                        const String DOMName = String::Format("dom_%d", i);
-                        ZAY_COLOR(panel, CurBox.mColor)
-                        ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h())
-                        ZAY_LTRB(panel, 2, 0, (panel.w() - 4) - 2, panel.h())
-                        if(ZayControl::RenderEditBox(panel, UIName, DOMName, 1, true, false))
-                            panel.repaint();
-                    }
-                    // 클릭박스
-                    else if(CurBox.mClickCB)
-                    {
-                        ZAY_INNER_UI(panel, 0, UIName,
-                            ZAY_GESTURE_VNTXY(v, n, t, x, y, i)
-                            {
-                                if(t == GT_InReleased)
-                                {
-                                    auto& CurBox = m->mBoxes[i];
-                                    if(CurBox.mClickCB)
-                                    {
-                                        auto OneRect = v->rect(n);
-                                        const sint32 X = CurBox.mLeft + (CurBox.mRight - CurBox.mLeft) * (x - OneRect.l) / (OneRect.r - OneRect.l);
-                                        const sint32 Y = CurBox.mTop + (CurBox.mBottom - CurBox.mTop) * (y - OneRect.t) / (OneRect.b - OneRect.t);
-                                        CurBox.mClickCB(X, Y);
-                                    }
-                                }
-                            });
-                    }
-                }
-            }
-        }
-
-        // 가상키보드
-        ZAY_FONT(panel, 1.5)
-        ZAY_XYWH(panel, panel.w() / 2 - (30 * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, 30 * 10, 30 * 4)
-            m->RenderImeDialog(panel);
+        else m->RenderLobby(panel);
     }
 }
 
@@ -443,12 +200,266 @@ hueconsoleData::hueconsoleData()
     const String Day = String::Format("%02d", Parser::GetInt(DateText.Middle(2, DateText.Length() - 6).Trim()));
     DateText = DateText.Right(4) + "/" + DateText.Left(2) + "/" + Day;
     ZayWidgetDOM::SetValue("update", "'" + DateText + "'");
+
+    // 시스템폰트 등록
+    buffer NewFontData = Asset::ToBuffer("font/daum_regular.ttf");
+    mSystemFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
+    Buffer::Free(NewFontData);
 }
 
 hueconsoleData::~hueconsoleData()
 {
     gSelf = nullptr;
     Platform::Socket::Close(mSocket);
+}
+
+void hueconsoleData::RenderApp(ZayPanel& panel)
+{
+    // 셀-바탕
+    for(sint32 y = 0, yend = mCells.Count() / mCellWidth; y < yend; ++y)
+    {
+        ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * y / mCellHeight),
+            panel.w(), sint32(panel.h() * (y + 1) / mCellHeight))
+        for(sint32 x = 0, xend = mCellWidth; x < xend; ++x)
+        {
+            const auto& CurCell = mCells[x + y * xend];
+            const bool ExtendFont = (1 < CurCell.mLetter.Length());
+            ZAY_LTRB(panel, sint32(panel.w() * x / mCellWidth), 0,
+                sint32(panel.w() * (x + 1 + ExtendFont) / mCellWidth), panel.h())
+            {
+                ZAY_COLOR(panel, CurCell.mBGColor)
+                {
+                    ZAY_RGBA(panel, 128, 128, 128, 120)
+                        panel.fill();
+                    ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                        panel.fill();
+                }
+            }
+            if(ExtendFont) x++;
+        }
+    }
+
+    // 그래프
+    for(sint32 i = 0, iend = mGraphs.Count(); i < iend; ++i)
+    {
+        auto& CurGraph = mGraphs[i];
+        ZAY_COLOR(panel, CurGraph.mColor)
+        switch(CurGraph.mType)
+        {
+        case Graph::Type::Line:
+            panel.line(
+                Point(sint32(panel.w() * CurGraph.mXBegin / mCellWidth),
+                    sint32(panel.h() * CurGraph.mYBegin / mCellHeight)),
+                Point(sint32(panel.w() * CurGraph.mXEnd / mCellWidth),
+                    sint32(panel.h() * CurGraph.mYEnd / mCellHeight)), 2);
+            break;
+        case Graph::Type::Rect:
+            ZAY_LTRB(panel,
+                sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
+                sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight),
+                sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
+                sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight))
+                panel.fill();
+            break;
+        case Graph::Type::Circle:
+            ZAY_LTRB(panel,
+                sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
+                sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight),
+                sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
+                sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight))
+                panel.circle();
+            break;
+        case Graph::Type::Image:
+            ZAY_RGBA(panel, 128, 128, 128, -128)
+            ZAY_LTRB(panel,
+                sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
+                sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight),
+                sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
+                sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight))
+                panel.ninepatch(R(CurGraph.mImage));
+            break;
+        }
+    }
+
+    // 셀-텍스트
+    const uint64 CurMsec = Platform::Utility::CurrentTimeMsec();
+    const sint32 FreeSpace = panel.h() / mCellHeight * 2;
+    for(sint32 y = 0, yend = mCells.Count() / mCellWidth; y < yend; ++y)
+    {
+        ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * y / mCellHeight) - FreeSpace,
+            panel.w(), sint32(panel.h() * (y + 1) / mCellHeight) + FreeSpace)
+        for(sint32 x = 0, xend = mCellWidth; x < xend; ++x)
+        {
+            const auto& CurCell = mCells[x + y * xend];
+            const bool ExtendFont = (1 < CurCell.mLetter.Length());
+            ZAY_LTRB(panel, sint32(panel.w() * x / mCellWidth), FreeSpace,
+                sint32(panel.w() * (x + 1 + ExtendFont) / mCellWidth), panel.h() - FreeSpace)
+            {
+                const float Opacity = (500 - Math::Max(0, CurCell.mWrittenMsec - CurMsec)) / 500.0f;
+                ZAY_COLOR(panel, CurCell.mColor)
+                ZAY_RGBA(panel, 128, 128, 128, 128 * Opacity)
+                    panel.text(panel.w() / 2 - 1, panel.h() / 2 - 1, CurCell.mLetter, UIFA_CenterMiddle);
+            }
+            if(ExtendFont) x++;
+        }
+    }
+
+    // 박스
+    for(sint32 i = 0, iend = mBoxes.Count(); i < iend; ++i)
+    {
+        auto& CurBox = mBoxes[i];
+        const String UIName = String::Format("ui_%d", i);
+        ZAY_LTRB(panel,
+            panel.w() * CurBox.mLeft / mCellWidth,
+            panel.h() * CurBox.mTop / mCellHeight,
+            panel.w() * CurBox.mRight / mCellWidth,
+            panel.h() * CurBox.mBottom / mCellHeight)
+        {
+            const bool Focused = ((panel.state(UIName) & (PS_Focused | PS_Dropping)) == PS_Focused);
+            ZAY_COLOR(panel, CurBox.mColor)
+            for(sint32 j = 0, jend = (Focused)? 4 : 2; j < jend; ++j)
+                ZAY_INNER(panel, -j)
+                ZAY_RGBA(panel, 128, 128, 128, 128 - (128 / jend) * j)
+                    panel.rect(1);
+
+            // 스캔에디터
+            if(CurBox.mTextCB)
+            {
+                const String DOMName = String::Format("dom_%d", i);
+                ZAY_COLOR(panel, CurBox.mColor)
+                ZAY_LTRB_SCISSOR(panel, 0, 0, panel.w(), panel.h())
+                ZAY_LTRB(panel, 2, 0, (panel.w() - 4) - 2, panel.h())
+                if(ZayControl::RenderEditBox(panel, UIName, DOMName, 1, true, false))
+                    panel.repaint();
+            }
+            // 클릭박스
+            else if(CurBox.mClickCB)
+            {
+                ZAY_INNER_UI(panel, 0, UIName,
+                    ZAY_GESTURE_VNTXY(v, n, t, x, y, this, i)
+                    {
+                        if(t == GT_InReleased)
+                        {
+                            auto& CurBox = mBoxes[i];
+                            if(CurBox.mClickCB)
+                            {
+                                auto OneRect = v->rect(n);
+                                const sint32 X = CurBox.mLeft + (CurBox.mRight - CurBox.mLeft) * (x - OneRect.l) / (OneRect.r - OneRect.l);
+                                const sint32 Y = CurBox.mTop + (CurBox.mBottom - CurBox.mTop) * (y - OneRect.t) / (OneRect.b - OneRect.t);
+                                CurBox.mClickCB(X, Y);
+                            }
+                        }
+                    });
+            }
+        }
+    }
+}
+
+void hueconsoleData::RenderLobby(ZayPanel& panel)
+{
+    // 정보필드
+    ZAY_FONT(panel, 1.2)
+    ZAY_LTRB(panel, 0, 0, panel.w(), 40)
+    {
+        ZAY_RGB(panel, 220, 220, 255)
+        {
+            panel.fill();
+            // 빌드날짜
+            const String UpdateText = ZayWidgetDOM::GetValue("update").ToText();
+            ZAY_RGB(panel, 96, 96, 96)
+                panel.text(panel.w() - 10, panel.h() / 2, UpdateText, UIFA_RightMiddle);
+            // 통계정보
+            ZAY_RGB_IF(panel, 0, 0, 0, mHasConnected)
+            ZAY_RGB_IF(panel, 96, 96, 96, !mHasConnected)
+                panel.text(String::Format("  방문 %d회 / 실시간 %d명", mInfo_Total, mInfo_RealTime), UIFA_LeftMiddle, UIFE_Right);
+        }
+    }
+
+    // 앱리스트
+    auto& AllApps = hueconsoleData::_AllApps();
+    ZAY_LTRB(panel, 10, 40, panel.w() - 10, panel.h() - 10)
+    for(sint32 i = 0, iend = AllApps.Count(); i < iend; ++i)
+    {
+        chararray CurApp;
+        if(auto OneApp = AllApps.AccessByOrder(i, &CurApp))
+        ZAY_LTRB_SCISSOR(panel, 0, sint32(panel.h() * (OneApp->mOrderPhy * 0.001) / iend + 10),
+            panel.w(), sint32(panel.h() * (OneApp->mOrderPhy * 0.001 + 1) / iend))
+        {
+            // 배경
+            ZAY_RGB(panel, 255, 255, 255)
+            {
+                ZAY_RGBA(panel, 128, 128, 128, 120)
+                    panel.fill();
+                ZAY_LTRB(panel, 0, 0, panel.w() - 1, panel.h() - 1)
+                    panel.fill();
+            }
+
+            // 앱버튼
+            const String UIApp = String::Format("ui_app_%d", i);
+            ZAY_LTRB_UI(panel, 0, 0, panel.w() - 150, panel.h(), UIApp,
+                ZAY_GESTURE_T(t, this, CurApp)
+                {
+                    if(t == GT_InReleased)
+                    {
+                        auto& AllApps = hueconsoleData::_AllApps();
+                        if(auto OneApp = AllApps.Access(&CurApp[0]))
+                        {
+                            mLastApp = &CurApp[0];
+                            // 윈도우타이틀
+                            Platform::SetWindowName(String::Format("%s - HueConsole[%dx%d]",
+                                (chars) mLastApp, mCellWidth, mCellHeight));
+                            OneApp->mCB();
+                        }
+                    }
+                })
+            {
+                ZAY_FONT(panel, 2.0)
+                ZAY_RGB(panel, 0, 0, 0)
+                    panel.text(&CurApp[0], UIFA_CenterMiddle, UIFE_Right);
+            }
+
+            // 앱정보
+            ZAY_LTRB(panel, panel.w() - 150, 0, panel.w(), panel.h())
+            {
+                // 별점
+                ZAY_RGB(panel, 220, 220, 255)
+                {
+                    panel.fill();
+                    ZAY_FONT(panel, 3.0)
+                    ZAY_RGB(panel, 92, 92, 92)
+                    ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() * 0.3)
+                        panel.text(panel.w() / 2, panel.h() / 2, "★");
+                    ZAY_FONT(panel, 2.0)
+                    ZAY_RGB(panel, 64, 64, 64)
+                    ZAY_LTRB(panel, 0, panel.h() * 0.3, panel.w(), panel.h() * 0.5)
+                        panel.text(panel.w() / 2, panel.h() / 2, String::Format("%04d", OneApp->mStar));
+                }
+
+                // 투표
+                const String AppName(&CurApp[0]);
+                const String UIVote = String::Format("ui_vote_%d", i);
+                const bool Focused = ((panel.state(UIVote) & (PS_Focused | PS_Dropping)) == PS_Focused);
+                const bool Pressed = ((panel.state(UIVote) & (PS_Pressed | PS_Dragging)) != 0);
+                ZAY_LTRB_UI(panel, 0, panel.h() * 0.5, panel.w(), panel.h(), UIVote,
+                    ZAY_GESTURE_T(t, this, AppName)
+                    {
+                        if(t == GT_InReleased)
+                            Send_TurnHeart(AppName);
+                    })
+                ZAY_INNER_SCISSOR(panel, (Pressed)? 10 : 8)
+                ZAY_RGB_IF(panel, 0, 0, 255, OneApp->mStarVoted)
+                ZAY_RGB_IF(panel, 80, 80, 80, !OneApp->mStarVoted)
+                {
+                    ZAY_RGBA(panel, 128, 128, 128, (Focused)? 64 : 32)
+                        panel.fill();
+                    ZAY_FONT(panel, 1.5)
+                        panel.text((OneApp->mStarVoted)? "VOTED" : "VOTE");
+                    ZAY_INNER(panel, 2)
+                        panel.rect(2);
+                }
+            }
+        }
+    }
 }
 
 void hueconsoleData::RenderImeDialog(ZayPanel& panel)
