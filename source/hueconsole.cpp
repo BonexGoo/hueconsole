@@ -169,19 +169,20 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
     ZAY_RGB(panel, 192, 192, 192)
         panel.fill();
 
-    ZAY_FONT(panel, 1.0, m->mSystemFont)
+    if(0 < m->mLastApp.Length())
     {
-        if(0 < m->mLastApp.Length())
-        {
-            ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
-                m->RenderApp(panel);
-            // 가상키보드
-            ZAY_FONT(panel, 1.5)
-            ZAY_XYWH(panel, panel.w() / 2 - (30 * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, 30 * 10, 30 * 4)
-                m->RenderImeDialog(panel);
-        }
-        else m->RenderLobby(panel);
+        const float FontSizeA = panel.w() / m->mCellWidth / 7;
+        const float FontSizeB = panel.h() / m->mCellHeight / 15;
+        ZAY_FONT(panel, Math::MinF(FontSizeA, FontSizeB), m->mSystemFont)
+        ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
+            m->RenderApp(panel);
+        // 가상키보드
+        ZAY_FONT(panel, 1.5, m->mSystemFont)
+        ZAY_XYWH(panel, panel.w() / 2 - (30 * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, 30 * 10, 30 * 4)
+            m->RenderImeDialog(panel);
     }
+    else ZAY_FONT(panel, 1.0, m->mSystemFont)
+        m->RenderLobby(panel);
 }
 
 hueconsoleData::hueconsoleData()
