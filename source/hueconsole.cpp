@@ -11,6 +11,7 @@ extern h_view gView;
 extern sint32 gViewWidth;
 extern sint32 gViewHeight;
 static hueconsoleData* gSelf = nullptr;
+static const sint32 gButtonSize = 34;
 
 ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
 {
@@ -20,8 +21,8 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
         gViewWidth = WH[0];
         gViewHeight = WH[1];
         m->mImePosLog.x = Math::Clamp(m->mImePosLog.x,
-            0 - gViewWidth / 2 + (30 * 10) / 2,
-            gViewWidth - gViewWidth / 2 - (30 * 10) / 2);
+            0 - gViewWidth / 2 + (gButtonSize * 10) / 2,
+            gViewWidth - gViewWidth / 2 - (gButtonSize * 10) / 2);
     }
     else if(type == CT_Tick)
     {
@@ -98,9 +99,9 @@ ZAY_VIEW_API OnCommand(CommandType type, id_share in, id_cloned_share* out)
                 m->mImePosPhy.x = Math::Max((m->mImePosPhy.x * 7 + m->mImePosLog.x * 3) / 10 - 1, m->mImePosLog.x);
                 m->invalidate(2);
             }
-            if(m->mImePosLog.y == 1 && m->mImePosPhy.y < 30 * 4)
+            if(m->mImePosLog.y == 1 && m->mImePosPhy.y < gButtonSize * 4)
             {
-                m->mImePosPhy.y = Math::Min((m->mImePosPhy.y * 8 + (30 * 4) * 2) / 10 + 1, 30 * 4);
+                m->mImePosPhy.y = Math::Min((m->mImePosPhy.y * 8 + (gButtonSize * 4) * 2) / 10 + 1, gButtonSize * 4);
                 m->invalidate(2);
             }
             else if(m->mImePosLog.y == 0 && 0 < m->mImePosPhy.y)
@@ -177,8 +178,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
         ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
             m->RenderApp(panel);
         // 가상키보드
-        ZAY_FONT(panel, 1.5, m->mSystemFont)
-        ZAY_XYWH(panel, panel.w() / 2 - (30 * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, 30 * 10, 30 * 4)
+        ZAY_FONT(panel, 1.8, m->mSystemFont)
+        ZAY_XYWH(panel, panel.w() / 2 - (gButtonSize * 10) / 2 + m->mImePosPhy.x, panel.h() - m->mImePosPhy.y, gButtonSize * 10, gButtonSize * 4)
             m->RenderImeDialog(panel);
     }
     else ZAY_FONT(panel, 1.0, m->mSystemFont)
@@ -486,13 +487,13 @@ void hueconsoleData::RenderImeDialog(ZayPanel& panel)
                     {
                         if(!String::Compare(OneKey, "←"))
                         {
-                            Platform::SendKeyEvent(gView, 8, OneKey, true);
-                            Platform::SendKeyEvent(gView, 8, OneKey, false);
+                            Platform::SendKeyEvent(gView, 8, "\x08", true);
+                            Platform::SendKeyEvent(gView, 8, "\x08", false);
                         }
                         else if(!String::Compare(OneKey, "↙"))
                         {
-                            Platform::SendKeyEvent(gView, 13, OneKey, true);
-                            Platform::SendKeyEvent(gView, 13, OneKey, false);
+                            Platform::SendKeyEvent(gView, 13, "\x0D", true);
+                            Platform::SendKeyEvent(gView, 13, "\x0D", false);
                         }
                         else
                         {
@@ -552,8 +553,8 @@ void hueconsoleData::RenderImeDialog(ZayPanel& panel)
                 if(HasDrag)
                 {
                     mImePosLog.x = Math::Clamp(mImePosLog.x,
-                        0 - gViewWidth / 2 + (30 * 10) / 2,
-                        gViewWidth - gViewWidth / 2 - (30 * 10) / 2);
+                        0 - gViewWidth / 2 + (gButtonSize * 10) / 2,
+                        gViewWidth - gViewWidth / 2 - (gButtonSize * 10) / 2);
                 }
                 else mImePosLog.y = 1 - mImePosLog.y;
             }
@@ -565,7 +566,7 @@ void hueconsoleData::RenderImeDialog(ZayPanel& panel)
         {
             ZAY_RGBA(panel, 128, 128, 128, (Focused) ? 96 : 64)
                 panel.fill();
-            ZAY_FONT(panel, 0.6)
+            ZAY_FONT(panel, 0.5)
                 panel.text(" KEYBOARD", UIFA_LeftMiddle, UIFE_Right);
             panel.rect(2);
         }
