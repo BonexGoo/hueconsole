@@ -18,7 +18,7 @@ void OnDan(const char* text)
     print(" Retry \n");
 }
 
-HUE_DECLARE_APP("구구단", googoodan)
+//HUE_DECLARE_APP("구구단", googoodan)
 void googoodan()
 {
     clrscr(60, 20);
@@ -41,7 +41,7 @@ void RecvTalk(const void* data, int length)
     print("\n >> %.*s", length, data);
 }
 
-HUE_DECLARE_APP("우리톡톡", freetalk)
+//HUE_DECLARE_APP("우리톡톡", freetalk)
 void freetalk()
 {
     setcolor("#808080");
@@ -125,7 +125,7 @@ void OnRemove(int x, int y)
     send("iconeditor.pixel", Pixel, 2);
 }
 
-HUE_DECLARE_APP("아이콘에디터", iconeditor)
+//HUE_DECLARE_APP("아이콘에디터", iconeditor)
 void iconeditor()
 {
     setbgcolor("#808080");

@@ -1,6 +1,6 @@
 ﻿#include <huecoding.h>
 
-void next(int x, int y)
+static void next(int x, int y)
 {
 	clrscr(40, 30);
 

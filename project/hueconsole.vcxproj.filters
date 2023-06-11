@@ -65,7 +65,7 @@
     <ClCompile Include="..\source\resource.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\huecoding\james.cpp">
+    <ClCompile Include="..\huecoding\kangsa.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
     <ClCompile Include="..\source\huecoding.cpp">
@@ -81,6 +81,12 @@
       <Filter>huecoding</Filter>
     </ClCompile>
     <ClCompile Include="..\huecoding\leehyunjoo.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\huecoding\hayoon.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\huecoding\koeunbin.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
   </ItemGroup>
