@@ -1,6 +1,6 @@
 ﻿#include <huecoding.h>
 
-HUE_DECLARE_APP("그림엽서/이승아", postcard)
+HUE_DECLARE_APP("코딩엽서/이승아", postcard)
 void postcard()
 {
     setcolor("#000000");

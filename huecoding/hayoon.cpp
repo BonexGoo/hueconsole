@@ -9,7 +9,7 @@ static void next(int x, int y)
 	print("사랑해요!\n");
 }
 
-HUE_DECLARE_APP("그림엽서/하윤", postcard)
+HUE_DECLARE_APP("코딩엽서/하윤", postcard)
 void postcard()
 {
 	gotoxy(20, 3);

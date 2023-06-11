@@ -8,7 +8,7 @@ static void next(int x, int y)
 	print("뻥이예여\n");
 }
 
-//HUE_DECLARE_APP("그림엽서/제임스", postcard)
+//HUE_DECLARE_APP("코딩엽서/제임스", postcard)
 void postcard()
 {
 	clrscr(40, 30);

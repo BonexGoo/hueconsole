@@ -11,7 +11,7 @@ static void next(int x, int y)
 }
 
 
-HUE_DECLARE_APP("그림엽서/d('~')b", postcard)
+HUE_DECLARE_APP("코딩엽서/d('~')b", postcard)
 void postcard()
 {
     gotoxy(20, 3);
