@@ -65,7 +65,7 @@
     <ClCompile Include="..\source\resource.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\huecoding\yourname.cpp">
+    <ClCompile Include="..\huecoding\james.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
     <ClCompile Include="..\source\huecoding.cpp">
@@ -76,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="..\source\base64\base64.cpp">
       <Filter>source\base64</Filter>
+    </ClCompile>
+    <ClCompile Include="..\huecoding\leeseungah.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\huecoding\leehyunjoo.cpp">
+      <Filter>huecoding</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
