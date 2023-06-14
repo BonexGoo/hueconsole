@@ -38,10 +38,10 @@ class Graph
 public:
     enum class Type {Null, Line, Rect, Circle, Image};
     Type mType {Type::Null};
-    sint32 mXBegin {0};
-    sint32 mYBegin {0};
-    sint32 mXEnd {0};
-    sint32 mYEnd {0};
+    float mXBegin {0};
+    float mYBegin {0};
+    float mXEnd {0};
+    float mYEnd {0};
     Color mColor;
     String mImage;
 };
@@ -65,8 +65,8 @@ public:
     static void Scan(sint32 w, TextCB cb);
     static void Button(sint32 w, sint32 h, ClickCB cb);
     static void GotoXY(sint32 x, sint32 y);
-    static void GraphTo(Graph::Type type, sint32 x, sint32 y);
-    static void ImageTo(chars name, sint32 x, sint32 y);
+    static void GraphTo(Graph::Type type, float x, float y);
+    static void ImageTo(chars name, float x, float y);
     static void Listen(chars key, sint32 recent, BinaryCB cb);
     static void Send(chars key, bytes data, sint32 length);
     static void Repaint();
@@ -95,9 +95,11 @@ public:
     sint32 mCellHeight {0};
     Array<Cell> mCells;
     sint32 mCellFocus {0};
-    Color mClearColor {Color::White};
+    float mLastGraphX {0};
+    float mLastGraphY {0};
     Color mLastColor {Color::Black};
     Color mLastBGColor {Color::White};
+    Color mClearColor {Color::White};
     Array<Box> mBoxes;
     Array<Graph> mGraphs;
     bool mScrollLock {false};

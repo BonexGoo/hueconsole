@@ -65,22 +65,22 @@ void gotoxy(int x, int y)
     hueconsoleData::GotoXY(x, y);
 }
 
-void line(int x, int y)
+void line(float x, float y)
 {
     hueconsoleData::GraphTo(Graph::Type::Line, x, y);
 }
 
-void rect(int x, int y)
+void rect(float x, float y)
 {
     hueconsoleData::GraphTo(Graph::Type::Rect, x, y);
 }
 
-void circle(int x, int y)
+void circle(float x, float y)
 {
     hueconsoleData::GraphTo(Graph::Type::Circle, x, y);
 }
 
-void image(int x, int y, const char* name)
+void image(float x, float y, const char* name)
 {
     hueconsoleData::ImageTo(name, x, y);
 }

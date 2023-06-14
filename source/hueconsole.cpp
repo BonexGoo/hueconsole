@@ -172,8 +172,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
     if(0 < m->mLastApp.Length())
     {
-        const float FontSizeA = panel.w() / m->mCellWidth / 7;
-        const float FontSizeB = panel.h() / m->mCellHeight / 15;
+        const float FontSizeA = (panel.w() / m->mCellWidth - 2) / 7.0;
+        const float FontSizeB = (panel.h() / m->mCellHeight - 2) / 15.0;
         ZAY_FONT(panel, Math::MinF(FontSizeA, FontSizeB), m->mSystemFont)
         ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
             m->RenderApp(panel);
@@ -204,7 +204,7 @@ hueconsoleData::hueconsoleData()
     ZayWidgetDOM::SetValue("update", "'" + DateText + "'");
 
     // 시스템폰트 등록
-    buffer NewFontData = Asset::ToBuffer("font/daum_regular.ttf");
+    buffer NewFontData = Asset::ToBuffer("font/jalnan.ttf");
     mSystemFont = Platform::Utility::CreateSystemFont((bytes) NewFontData, Buffer::CountOf(NewFontData));
     Buffer::Free(NewFontData);
 }
@@ -250,34 +250,34 @@ void hueconsoleData::RenderApp(ZayPanel& panel)
         {
         case Graph::Type::Line:
             panel.line(
-                Point(sint32(panel.w() * CurGraph.mXBegin / mCellWidth),
-                    sint32(panel.h() * CurGraph.mYBegin / mCellHeight)),
-                Point(sint32(panel.w() * CurGraph.mXEnd / mCellWidth),
-                    sint32(panel.h() * CurGraph.mYEnd / mCellHeight)), 2);
+                Point(panel.w() * CurGraph.mXBegin / mCellWidth,
+                      panel.h() * CurGraph.mYBegin / mCellHeight),
+                Point(panel.w() * CurGraph.mXEnd / mCellWidth,
+                      panel.h() * CurGraph.mYEnd / mCellHeight), 2);
             break;
         case Graph::Type::Rect:
             ZAY_LTRB(panel,
-                sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
-                sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight),
-                sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
-                sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight))
+                panel.w() * Math::MinF(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth,
+                panel.h() * Math::MinF(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight,
+                panel.w() * Math::MaxF(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth,
+                panel.h() * Math::MaxF(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight)
                 panel.fill();
             break;
         case Graph::Type::Circle:
             ZAY_LTRB(panel,
-                sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
-                sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight),
-                sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
-                sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight))
+                panel.w() * Math::MinF(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth,
+                panel.h() * Math::MinF(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight,
+                panel.w() * Math::MaxF(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth,
+                panel.h() * Math::MaxF(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight)
                 panel.circle();
             break;
         case Graph::Type::Image:
             ZAY_RGBA(panel, 128, 128, 128, -128)
             ZAY_LTRB(panel,
-                sint32(panel.w() * Math::Min(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
-                sint32(panel.h() * Math::Min(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight),
-                sint32(panel.w() * Math::Max(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth),
-                sint32(panel.h() * Math::Max(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight))
+                panel.w() * Math::MinF(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth,
+                panel.h() * Math::MinF(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight,
+                panel.w() * Math::MaxF(CurGraph.mXBegin, CurGraph.mXEnd) / mCellWidth,
+                panel.h() * Math::MaxF(CurGraph.mYBegin, CurGraph.mYEnd) / mCellHeight)
                 panel.ninepatch(R(CurGraph.mImage));
             break;
         }
@@ -421,20 +421,20 @@ void hueconsoleData::RenderLobby(ZayPanel& panel)
             }
 
             // 앱정보
-            ZAY_LTRB(panel, panel.w() - 150, 0, panel.w(), panel.h())
+            ZAY_LTRB_SCISSOR(panel, panel.w() - 150, 0, panel.w(), panel.h())
             {
                 // 별점
                 ZAY_RGB(panel, 220, 220, 255)
                 {
                     panel.fill();
-                    ZAY_FONT(panel, 3.0)
-                    ZAY_RGB(panel, 92, 92, 92)
-                    ZAY_LTRB(panel, 0, 0, panel.w(), panel.h() * 0.3)
-                        panel.text(panel.w() / 2, panel.h() / 2, "★");
+                    ZAY_FONT(panel, 12.0)
+                    ZAY_RGBA(panel, 0, 0, 0, 16)
+                    ZAY_LTRB(panel, 0, 0, panel.w(), panel.w())
+                        panel.text(-20, -40, "★", UIFA_LeftTop);
                     ZAY_FONT(panel, 2.0)
                     ZAY_RGB(panel, 64, 64, 64)
                     ZAY_LTRB(panel, 0, panel.h() * 0.3, panel.w(), panel.h() * 0.5)
-                        panel.text(panel.w() / 2, panel.h() / 2, String::Format("%04d", OneApp->mStar));
+                        panel.text(panel.w() / 2, panel.h() / 2, String::Format("★ %04d", OneApp->mStar));
                 }
 
                 // 투표
@@ -581,6 +581,8 @@ void hueconsoleData::ClearScreen(sint32 w, sint32 h)
         gSelf->mCellHeight = Math::Max(1, h);
         gSelf->mCells.Clear();
         gSelf->mCellFocus = 0;
+        gSelf->mLastGraphX = 0;
+        gSelf->mLastGraphY = 0;
         gSelf->mClearColor = gSelf->mLastBGColor;
         for(sint32 i = 0, iend = gSelf->mCellWidth * gSelf->mCellHeight; i < iend; ++i)
         {
@@ -714,6 +716,8 @@ void hueconsoleData::GotoXY(sint32 x, sint32 y)
     if(gSelf)
     {
         gSelf->mCellFocus = x + y * gSelf->mCellWidth;
+        gSelf->mLastGraphX = x;
+        gSelf->mLastGraphY = y;
         if(!gSelf->mScrollLock)
         {
             if(gSelf->mScrollLog + (gSelf->mCellHeight - 1) * 1000 < y * 1000)
@@ -724,34 +728,36 @@ void hueconsoleData::GotoXY(sint32 x, sint32 y)
     }
 }
 
-void hueconsoleData::GraphTo(Graph::Type type, sint32 x, sint32 y)
+void hueconsoleData::GraphTo(Graph::Type type, float x, float y)
 {
     if(gSelf)
     {
         auto& NewGraph = gSelf->mGraphs.AtAdding();
         NewGraph.mType = type;
-        NewGraph.mXBegin = gSelf->mCellFocus % gSelf->mCellWidth;
-        NewGraph.mYBegin = gSelf->mCellFocus / gSelf->mCellWidth;
+        NewGraph.mXBegin = gSelf->mLastGraphX;
+        NewGraph.mYBegin = gSelf->mLastGraphY;
         NewGraph.mXEnd = x;
         NewGraph.mYEnd = y;
         NewGraph.mColor = gSelf->mLastColor;
-        GotoXY(x, y);
+        gSelf->mLastGraphX = x;
+        gSelf->mLastGraphY = y;
     }
 }
 
-void hueconsoleData::ImageTo(chars name, sint32 x, sint32 y)
+void hueconsoleData::ImageTo(chars name, float x, float y)
 {
     if(gSelf)
     {
         auto& NewGraph = gSelf->mGraphs.AtAdding();
         NewGraph.mType = Graph::Type::Image;
-        NewGraph.mXBegin = gSelf->mCellFocus % gSelf->mCellWidth;
-        NewGraph.mYBegin = gSelf->mCellFocus / gSelf->mCellWidth;
+        NewGraph.mXBegin = gSelf->mLastGraphX;
+        NewGraph.mYBegin = gSelf->mLastGraphY;
         NewGraph.mXEnd = x;
         NewGraph.mYEnd = y;
         NewGraph.mColor = gSelf->mLastColor;
         NewGraph.mImage = name;
-        GotoXY(x, y);
+        gSelf->mLastGraphX = x;
+        gSelf->mLastGraphY = y;
     }
 }
 

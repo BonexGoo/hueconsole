@@ -20,10 +20,10 @@
     void scan(int w, TextCB cb);
     void button(int w, int h, ClickCB cb);
     void gotoxy(int x, int y);
-    void line(int x, int y);
-    void rect(int x, int y);
-    void circle(int x, int y);
-    void image(int x, int y, const char* name);
+    void line(float x, float y);
+    void rect(float x, float y);
+    void circle(float x, float y);
+    void image(float x, float y, const char* name);
     void listen(const char* key, int recent, BinaryCB cb);
     void send(const char* key, const void* data, int length);
     void repaint();

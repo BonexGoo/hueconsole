@@ -30,6 +30,61 @@ void googoodan()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#define degToRad(angleInDegrees) ((angleInDegrees) * M_PI / 180.0)
+#define radToDeg(angleInRadians) ((angleInRadians) * 180.0 / M_PI)
+#define M_PI   3.14159265358979323846264338327950288
+
+char TimeText[20];
+int Angle[3] = {0, 0, 0};
+float Dist[3] = {7, 6, 4};
+void OnUpdate(int x, int y)
+{
+    time_t t = time(NULL);
+    struct tm* tt = localtime(&t);
+    int Hour = tt->tm_hour % 12;
+    sprintf(TimeText, "%s %02d:%02d:%02d", (tt->tm_hour < 12)? "AM" : "PM",
+        (0 < Hour)? Hour : 12, tt->tm_min, tt->tm_sec);
+    Angle[0] = tt->tm_sec * 6;
+    Angle[1] = tt->tm_min * 6;
+    Angle[2] = Hour * 30;
+    repaint();
+}
+
+HUE_DECLARE_APP("미니시계", miniclock)
+void miniclock()
+{
+    clrscr(30, 30);
+
+    gotoxy(15, 15);
+    for(int a = 0; a < 3; a++)
+    {
+        float XYs[3][2] = {
+            {-0.5, -Dist[a]},
+            {0, -Dist[a] - 3},
+            {0.5, -Dist[a]}};
+        for(int i = 0; i < 3; i++)
+        {
+            float Rad = degToRad(Angle[a]);
+            float X = XYs[i][0] * cos(Rad) - XYs[i][1] * sin(Rad);
+            float Y = XYs[i][0] * sin(Rad) + XYs[i][1] * cos(Rad);
+            line(15 + X, 15 + Y);
+        }
+        line(15, 15);
+    }
+
+    gotoxy(14, 14);
+    circle(16, 16);
+
+    gotoxy(1, 1);
+    button(8, 1, OnUpdate);
+    print("새로고침");
+    print(" %s", TimeText);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 void OnTalk(const char* text)
 {
