@@ -37,6 +37,7 @@ SOURCES += ../huecoding/kangsa.cpp
 SOURCES += ../huecoding/koeunbin.cpp
 SOURCES += ../huecoding/leehyunjoo.cpp
 SOURCES += ../huecoding/leeseungah.cpp
+SOURCES += ../huecoding/yusun.cpp
 
 ASSETS_IMAGE.files += ../assets/image
 ASSETS_IMAGE.path = /assets

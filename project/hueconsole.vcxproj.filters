@@ -89,5 +89,8 @@
     <ClCompile Include="..\huecoding\koeunbin.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
+    <ClCompile Include="..\huecoding\yusun.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

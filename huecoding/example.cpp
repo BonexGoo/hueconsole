@@ -53,7 +53,7 @@ void OnUpdate(int x, int y)
     repaint();
 }
 
-HUE_DECLARE_APP("미니시계", miniclock)
+//HUE_DECLARE_APP("미니시계", miniclock)
 void miniclock()
 {
     clrscr(30, 30);

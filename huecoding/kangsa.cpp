@@ -1,42 +1,47 @@
 ﻿#include <huecoding.h>
 
-static void next(int x, int y)
+static void SetTile()
 {
-	clrscr(40, 30);
-
-	gotoxy(20, 3);
-	print("뻥이예여\n");
+    gotoxy(0, 0);
+    for(int y = 0; y < 16; y++)
+    for(int x = 0; x < 16; x++)
+    {
+        if(x % 2 == y % 2) // X축-짝홀여부가 Y축-짝홀여부와 같으면
+            setbgcolor("#f0fff0");
+        else setbgcolor("#ffffff");
+        print(" ");
+    }
 }
 
-//HUE_DECLARE_APP("코딩엽서/제임스", postcard)
-void postcard()
+static void OnClick(int x, int y)
 {
-	clrscr(40, 30);
+    char Dot[2];
+    Dot[0] = x;
+    Dot[1] = y;
+    send("dot.kangsa", Dot, 2);
+}
 
-	setcolor("#ffff00");
-	gotoxy(20, 3);
-	rect(28, 4);
+static void OnListen(const void* data, int length)
+{
+    auto Dot = (char*) data;
+    int X = Dot[0];
+    int Y = Dot[1];
+    if(X == 0 && Y == 0) // [0, 0]블럭을 눌렀다면
+        SetTile();
+    else
+    {
+        gotoxy(X, Y);
+        setbgcolor("#000000");
+        print(" ");
+    }
+}
 
-	setcolor("#000000");
-	gotoxy(20, 3);
-	print("엄마에게\n");
+HUE_DECLARE_APP("도트편집기/강사", doteditor)
+void doteditor()
+{
+    clrscr(16, 16);
+    button(16, 16, OnClick);
 
-	gotoxy(12, 5);
-	setcolor("#0000ff");
-	print("엄마 항상 절 최고로\n");
-
-	gotoxy(12, 6);
-	print("잘해주셔서 감사해요~\n");
-
-	setcolor("#000000");
-	gotoxy(25, 10);
-	print("-아무개가\n");
-
-	gotoxy(20, 12);
-	button(8, 1, next);
-	print("다음으로");
-
-	setcolor("#808080");
-	gotoxy(1, 1);
-	image(5, 5, "character_a");
+    SetTile();
+    listen("dot.kangsa", 500, OnListen);
 }
