@@ -92,5 +92,11 @@
     <ClCompile Include="..\huecoding\yusun.cpp">
       <Filter>huecoding</Filter>
     </ClCompile>
+    <ClCompile Include="..\huecoding\jominsol.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\huecoding\sunhuegoo.cpp">
+      <Filter>huecoding</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

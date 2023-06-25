@@ -172,8 +172,8 @@ ZAY_VIEW_API OnRender(ZayPanel& panel)
 
     if(0 < m->mLastApp.Length())
     {
-        const float FontSizeA = (panel.w() / m->mCellWidth - 2) / 7.0;
-        const float FontSizeB = (panel.h() / m->mCellHeight - 2) / 15.0;
+        const float FontSizeA = (panel.w() / m->mCellWidth - 2) / 9.0;
+        const float FontSizeB = (panel.h() / m->mCellHeight - 2) / 18.0;
         ZAY_FONT(panel, Math::MinF(FontSizeA, FontSizeB), m->mSystemFont)
         ZAY_MOVE(panel, 0, -panel.h() * m->mScrollPhy / m->mCellHeight / 1000)
             m->RenderApp(panel);

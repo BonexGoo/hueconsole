@@ -39,10 +39,12 @@
   <ItemGroup>
     <ClCompile Include="..\huecoding\example.cpp" />
     <ClCompile Include="..\huecoding\hayoon.cpp" />
+    <ClCompile Include="..\huecoding\jominsol.cpp" />
     <ClCompile Include="..\huecoding\kangsa.cpp" />
     <ClCompile Include="..\huecoding\koeunbin.cpp" />
     <ClCompile Include="..\huecoding\leehyunjoo.cpp" />
     <ClCompile Include="..\huecoding\leeseungah.cpp" />
+    <ClCompile Include="..\huecoding\sunhuegoo.cpp" />
     <ClCompile Include="..\huecoding\yusun.cpp" />
     <ClCompile Include="..\source\base64\base64.cpp" />
     <ClCompile Include="..\source\huecoding.cpp" />

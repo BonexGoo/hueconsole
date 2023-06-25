@@ -33,10 +33,12 @@ HEADERS += ../source/base64/base64.h
 INCLUDEPATH += ../huecoding
 SOURCES += ../huecoding/example.cpp
 SOURCES += ../huecoding/hayoon.cpp
+SOURCES += ../huecoding/jominsol.cpp
 SOURCES += ../huecoding/kangsa.cpp
 SOURCES += ../huecoding/koeunbin.cpp
 SOURCES += ../huecoding/leehyunjoo.cpp
 SOURCES += ../huecoding/leeseungah.cpp
+SOURCES += ../huecoding/sunhuegoo.cpp
 SOURCES += ../huecoding/yusun.cpp
 
 ASSETS_IMAGE.files += ../assets/image

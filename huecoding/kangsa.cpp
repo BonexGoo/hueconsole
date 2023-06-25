@@ -36,7 +36,7 @@ static void OnListen(const void* data, int length)
     }
 }
 
-HUE_DECLARE_APP("도트편집기/강사", doteditor)
+//HUE_DECLARE_APP("도트편집기/강사", doteditor)
 void doteditor()
 {
     clrscr(16, 16);
