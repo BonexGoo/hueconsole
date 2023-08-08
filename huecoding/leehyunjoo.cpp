@@ -11,8 +11,8 @@ static void next(int x, int y)
 }
 
 
-HUE_DECLARE_APP("코딩엽서/d('~')b", postcard)
-void postcard()
+//HUE_DECLARE_APP("코딩엽서/d('~')b", postcard_hj)
+void postcard_hj()
 {
     gotoxy(20, 3);
     print("엄마에게\n");

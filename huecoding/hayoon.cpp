@@ -9,8 +9,8 @@ static void next(int x, int y)
 	print("사랑해요!\n");
 }
 
-HUE_DECLARE_APP("코딩엽서/하윤", postcard)
-void postcard()
+//HUE_DECLARE_APP("코딩엽서/하윤", postcard_hy)
+void postcard_hy()
 {
 	gotoxy(20, 3);
 	print("부모님께\n");
@@ -78,8 +78,8 @@ static void OnListen(const void* data, int len)
 	setcolor("#000000");
 }
 
-HUE_DECLARE_APP("도트편집기/하윤", doteditor)
-void doteditor()
+//HUE_DECLARE_APP("도트편집기/하윤", doteditor_hy)
+void doteditor_hy()
 {
 	listen("dot.hayoon", 500, OnListen);
 	clrscr(30, 30);
@@ -140,7 +140,7 @@ void right(int x, int y)
 	next_sel++;
 }
 
-HUE_DECLARE_APP("월드컵/하윤", worldcup)
+//HUE_DECLARE_APP("월드컵/하윤", worldcup)
 void worldcup()
 {
 	clrscr(30, 10);

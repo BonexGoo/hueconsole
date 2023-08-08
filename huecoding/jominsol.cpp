@@ -27,7 +27,7 @@ void oncheck(int x, int y)
     print("\n결과는? %d점", v);
 }
 
-HUE_DECLARE_APP("이름으로 보는 연애확률/조민솔", lovepercent)
+//HUE_DECLARE_APP("이름으로 보는 연애확률/조민솔", lovepercent)
 void lovepercent()
 {
     gotoxy(14, 11); setcolor("#0000ff"); print("남자");scan(5, on_text1); gotoxy(23, 11); print("은/는\n\n");

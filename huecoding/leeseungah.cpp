@@ -1,7 +1,7 @@
 ﻿#include <huecoding.h>
 
-HUE_DECLARE_APP("코딩엽서/이승아", postcard)
-void postcard()
+//HUE_DECLARE_APP("코딩엽서/이승아", postcard_sa)
+void postcard_sa()
 {
     setcolor("#000000");
     gotoxy(18, 1);

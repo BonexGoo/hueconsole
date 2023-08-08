@@ -53,7 +53,7 @@ void OnUpdate(int x, int y)
     repaint();
 }
 
-//HUE_DECLARE_APP("미니시계", miniclock)
+HUE_DECLARE_APP("미니시계", miniclock)
 void miniclock()
 {
     clrscr(30, 30);
@@ -96,7 +96,7 @@ void RecvTalk(const void* data, int length)
     print("\n >> %.*s", length, data);
 }
 
-//HUE_DECLARE_APP("우리톡톡", freetalk)
+HUE_DECLARE_APP("프리톡", freetalk)
 void freetalk()
 {
     setcolor("#808080");
@@ -235,4 +235,81 @@ void iconeditor()
     line(50, 58);
 
     listen("iconeditor.pixel", 500, RecvClick);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+unsigned char Data[120];
+int DataLen = 0;
+void RecvCompressor(const void* data, int length)
+{
+    auto RecvData = (unsigned char*) data;
+    DataLen = (120 < length)? 120 : length;
+
+    gotoxy(0, 2);
+    setcolor("#000000");
+    for(int i = 0; i < DataLen; ++i)
+    {
+        Data[i] = RecvData[i];
+        print(" %03d", Data[i]);
+    }
+}
+
+void PrintCompress(unsigned char data, int count)
+{
+    setcolor("#FF00FF");
+    print(" %03d", count);
+    setcolor("#000000");
+    print(" %03d", data);
+}
+
+void OnCompress(int x, int y)
+{
+    unsigned char OldData = Data[0];
+    int DataCount = 1;
+
+    gotoxy(0, 17);
+    for(int i = 1; i < DataLen; ++i)
+    {
+        if(OldData != Data[i])
+        {
+            PrintCompress(OldData, DataCount);
+            OldData = Data[i];
+            DataCount = 1;
+        }
+        else DataCount++;
+    }
+    PrintCompress(OldData, DataCount);
+}
+
+HUE_DECLARE_APP("파일압축기", compressor)
+void compressor()
+{
+    setbgcolor("#C080C0");
+    clrscr(48, 30);
+
+    // 원시 데이터 영역
+    setcolor("#000000");
+    gotoxy(1, 1);
+    print("원시 데이터");
+    setcolor("#E0C0E0");
+    gotoxy(0, 2);
+    rect(48, 12);
+
+    // 압축버튼
+    setcolor("#0000FF");
+    gotoxy(20, 14);
+    button(8, 1, OnCompress);
+    print("압축실행");
+
+    // 원시 데이터 영역
+    setcolor("#000000");
+    gotoxy(1, 16);
+    print("압축된 데이터");
+    setcolor("#E0C0E0");
+    gotoxy(0, 17);
+    rect(48, 27);
+    
+    // 데이터연결
+    listen("freetalk.text", 1, RecvCompressor);
 }

@@ -31,8 +31,8 @@ void OnListen(const void* data, int len)
 	}
 }
 
-HUE_DECLARE_APP("도트편집기/선휴", doteditor)
-void doteditor()
+//HUE_DECLARE_APP("도트편집기/선휴", doteditor_sh)
+void doteditor_sh()
 {
 	listen("구선휴", 500, OnListen);
 	clrscr(60, 60);
@@ -225,7 +225,7 @@ void OnTest1_3(int x, int y)
 	print("ㅗ");
 }
 
-HUE_DECLARE_APP("당신의 외모/선휴", yourface)
+//HUE_DECLARE_APP("당신의 외모/선휴", yourface)
 void yourface()
 {
 	print("테스트를 시작하시겠습니까?\n\n  ");

@@ -9,8 +9,8 @@ static void next(int x, int y)
 }
 
 
-HUE_DECLARE_APP("코딩엽서/고은빈", postcard)
-void postcard()
+//HUE_DECLARE_APP("코딩엽서/고은빈", postcard_eb)
+void postcard_eb()
 {
     gotoxy(20, 3);
     print("엄마에게\n");
@@ -62,7 +62,7 @@ void On4(int x, int y)
 }
 
 
-HUE_DECLARE_APP("나를 잘 아는 사람/고은빈", main33)
+//HUE_DECLARE_APP("나를 잘 아는 사람/고은빈", main33)
 void main33()
 {
     print("    <나를 가장 잘 아는 사람은??>\n\n");
